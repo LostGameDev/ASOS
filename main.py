@@ -32,7 +32,7 @@ def CheckIfPasswordExists(login, password):
 def GetAccreditationLevel(login):
     f = open(f"./accounts/{login}.json")
     data = json.loads(f.read())
-    return data["Accreditation"]
+    return data["accreditation"]
 
 def tokenize_command(command):
     tokens = []
