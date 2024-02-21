@@ -144,6 +144,7 @@ def CommandList(File, login):
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     f = open(ConvertedDir + File, 'r')
     data = f.read()
+    #TODO: Fix this so that it actually prints line by line instead of characters!
     for line in data:
         Utils.OSPrint(line)
     f.close()
