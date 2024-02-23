@@ -79,12 +79,15 @@ def OSMain(LoginFail):
     while True:
         command = Utils.OSInput(True)
         tokens = tokenize_command(command)
-        command_lower = tokens[0].lower()
+        try:
+            command_lower = tokens[0].lower()
+        except:
+            command_lower = ""
 
         if command_lower in commands:
             if len(tokens) > 1:
                 try:
-                    commands[command_lower](*tokens[1:], login)  # Pass all arguments except the command itself
+                    commands[command_lower](*tokens[1:], login=login)  # Pass all arguments except the command itself
                 except:
                     Utils.OSPrint(f"Error command \"{command_lower}\" has too many arguments!")
             else:
@@ -92,6 +95,7 @@ def OSMain(LoginFail):
                     commands[command_lower](login)
                 except:
                     Utils.OSPrint(f"Error command \"{command_lower}\" has too few arguments!")
+
         else:
             Utils.OSPrint("Invalid command. Enter \"help\" to see available commands.")
 LoadOS()
