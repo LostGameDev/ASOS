@@ -3,11 +3,14 @@ import subprocess
 import sys
 import shutil
 import Utils
+import time
 
-def CommandHelp(login):
+def CommandHelp():
     Utils.OSPrint("Available commands:")
+    time.sleep(0.1)
     for command in commands:
         Utils.OSPrint(command)
+        time.sleep(0.1)
 
 def CheckIfDirectoryExists(directory):
     char = {"/":'\\', ":":"", '"':''}
@@ -16,7 +19,10 @@ def CheckIfDirectoryExists(directory):
         return True
     return False
 
-def CommandDir(arg, login):
+def CommandDir(arg, arg2=""):
+    CurrentUser = open(".\\CurrentUser.txt")
+    login = CurrentUser.read()
+    CurrentUser.close()
     if os.stat(".\\UserDirectory.txt").st_size == 0:
         UserDirectory = f"A:/users/{login}/personal_files/"
         file = open(".\\UserDirectory.txt", "w")
@@ -49,7 +55,7 @@ def CommandDir(arg, login):
         else:
             Utils.OSPrint(f"{FileCount} files detected. {FolderCount} sub-directories detected.")
         return
-    if arg == "getname -P":
+    if arg == "getname" & arg2 == "-P":
         Utils.OSPrint(f"Current directory is: {UserDirectory}")
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
@@ -67,20 +73,24 @@ def CommandDir(arg, login):
         else:
             Utils.OSPrint(f"{FileCount} files detected. {FolderCount} sub-directories detected.")
         return
-    Exists = CheckIfDirectoryExists(arg)
-    if Exists == False:
-        Utils.OSPrint(f"Directory does not exist!")
-        return
-    file = open(".\\UserDirectory.txt", "w")
-    file.write(arg)
-    file.close()
-    UserDirectory = arg
-    char = {"/":'\\', ":":"", '"':''}
-    ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
-    os.system(f"cd {ConvertedDir}")
-    Utils.OSPrint(f"Now located in {arg}")
+    if arg == "access":
+        Exists = CheckIfDirectoryExists(arg2)
+        if Exists == False:
+            Utils.OSPrint(f"Directory does not exist!")
+            return
+        file = open(".\\UserDirectory.txt", "w")
+        file.write(arg2)
+        file.close()
+        UserDirectory = arg2
+        char = {"/":'\\', ":":"", '"':''}
+        ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
+        os.system(f"cd {ConvertedDir}")
+        Utils.OSPrint(f"Now located in {arg2}")
 
-def CommandExec(program, login):
+def CommandExec(program):
+    CurrentUser = open(".\\CurrentUser.txt")
+    login = CurrentUser.read()
+    CurrentUser.close()
     if os.stat(".\\UserDirectory.txt").st_size == 0:
         UserDirectory = f"A:/users/{login}/personal_files/"
         file = open(".\\UserDirectory.txt", "w")
@@ -111,7 +121,10 @@ def CommandExec(program, login):
     else:
         Utils.OSPrint("Program not found.")
 
-def CommandOpen(File, login):
+def CommandOpen(File):
+    CurrentUser = open(".\\CurrentUser.txt")
+    login = CurrentUser.read()
+    CurrentUser.close()
     if os.stat(".\\UserDirectory.txt").st_size == 0:
         UserDirectory = f"A:/users/{login}/personal_files/"
         file = open(".\\UserDirectory.txt", "w")
@@ -130,7 +143,10 @@ def CommandOpen(File, login):
     Utils.OSProgramLoad(f"Booting \"TextEditor.py\"", f"Aperture Science Text Editor running. Accessing file \"{File}\"", "Normal")
     subprocess.run([python_executable, "TextEditor.py", File], env=env, shell=True, cwd = "./ROM/")
 
-def CommandList(File, login):
+def CommandList(File):
+    CurrentUser = open(".\\CurrentUser.txt")
+    login = CurrentUser.read()
+    CurrentUser.close()
     if os.stat(".\\UserDirectory.txt").st_size == 0:
         UserDirectory = f"A:/users/{login}/personal_files/"
         file = open(".\\UserDirectory.txt", "w")
@@ -149,7 +165,10 @@ def CommandList(File, login):
         Utils.OSPrint(line)
     f.close()
 
-def CommandCreate(Name, Type, login):
+def CommandCreate(Name, Type):
+    CurrentUser = open(".\\CurrentUser.txt")
+    login = CurrentUser.read()
+    CurrentUser.close()
     if os.stat(".\\UserDirectory.txt").st_size == 0:
         UserDirectory = f"A:/users/{login}/personal_files/"
         file = open(".\\UserDirectory.txt", "w")
@@ -179,7 +198,10 @@ def CommandCreate(Name, Type, login):
         Utils.OSPrint(f"Invalid Type \"{Type}\"...")
         return
 
-def CommandDelete(Name, Type, login):
+def CommandDelete(Name, Type):
+    CurrentUser = open(".\\CurrentUser.txt")
+    login = CurrentUser.read()
+    CurrentUser.close()
     if os.stat(".\\UserDirectory.txt").st_size == 0:
         UserDirectory = f"A:/users/{login}/personal_files/"
         file = open(".\\UserDirectory.txt", "w")
@@ -209,7 +231,7 @@ def CommandDelete(Name, Type, login):
         Utils.OSPrint(f"Invalid Type \"{Type}\"...")
         return
     
-def CommandClear(login):
+def CommandClear():
     os.system("cls")
 
 commands = {

@@ -22,6 +22,11 @@ def CheckIfLoginExists(login):
         return False
     return True
 
+def SetCurrentUser(login):
+    file = open(".\\CurrentUser.txt", "w")
+    file.write(login)
+    file.close()
+
 def CheckIfPasswordExists(login, password):
     f = open(f"./accounts/{login}.json")
     data = json.loads(f.read())
@@ -65,6 +70,7 @@ def OSMain(LoginFail):
         Utils.OSPrint("Login does not exist! Please try again!")
         OSMain(True)
     Utils.OSPrint("Login successfully identified. Please enter your password below.")
+    SetCurrentUser(login)
     password = Utils.OSInput(True)
     PasswordCheck = CheckIfPasswordExists(login, password)
     if PasswordCheck != True:
@@ -84,12 +90,12 @@ def OSMain(LoginFail):
         if command_lower in commands:
             if len(tokens) > 1:
                 try:
-                    commands[command_lower](*tokens[1:], login)  # Pass all arguments except the command itself
+                    commands[command_lower](*tokens[1:])  # Pass all arguments
                 except:
                     Utils.OSPrint(f"Error command \"{command_lower}\" has too many arguments!")
             else:
                 try:
-                    commands[command_lower](login)
+                    commands[command_lower]()
                 except:
                     Utils.OSPrint(f"Error command \"{command_lower}\" has too few arguments!")
         else:
