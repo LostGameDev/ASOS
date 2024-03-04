@@ -5,12 +5,18 @@ import shutil
 import Utils
 import time
 
-def CommandHelp():
-    Utils.OSPrint("Available commands:")
-    time.sleep(0.1)
-    for command in commands:
-        Utils.OSPrint(command)
+def CommandHelp(command=""):
+    if command == "":
+        Utils.OSPrint("Available commands:")
         time.sleep(0.1)
+        for command in commands:
+            Utils.OSPrint(command)
+            time.sleep(0.1)
+    else:
+        if command in commandDefinitions:
+            Utils.OSPrint(commandDefinitions[command])
+        else:
+            Utils.OSPrint(f"Command \"{command}\" does not exist!")
 
 def CheckIfDirectoryExists(directory):
     char = {"/":'\\', ":":"", '"':''}
@@ -19,7 +25,7 @@ def CheckIfDirectoryExists(directory):
         return True
     return False
 
-def CommandDir(arg, arg2=""):
+def GetUserDirectory():
     CurrentUser = open(".\\CurrentUser.txt")
     login = CurrentUser.read()
     CurrentUser.close()
@@ -31,6 +37,7 @@ def CommandDir(arg, arg2=""):
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
         os.system(f"cd {ConvertedDir}")
+        return 
     else:
         file = open(".\\UserDirectory.txt", "r")
         UserDirectory = file.read()
@@ -38,8 +45,12 @@ def CommandDir(arg, arg2=""):
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
         os.system(f"cd {ConvertedDir}")
+        return UserDirectory
+
+def CommandDir(arg, arg2=""):
+    UserDirectory = GetUserDirectory()
         
-    if arg == "getname":
+    if arg == "getname" & arg2 == "":
         Utils.OSPrint(f"Current directory is: {UserDirectory}")
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
@@ -55,7 +66,7 @@ def CommandDir(arg, arg2=""):
         else:
             Utils.OSPrint(f"{FileCount} files detected. {FolderCount} sub-directories detected.")
         return
-    if arg == "getname" & arg2 == "-P":
+    elif arg == "getname" & arg2 == "-P":
         Utils.OSPrint(f"Current directory is: {UserDirectory}")
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
@@ -73,7 +84,7 @@ def CommandDir(arg, arg2=""):
         else:
             Utils.OSPrint(f"{FileCount} files detected. {FolderCount} sub-directories detected.")
         return
-    if arg == "access":
+    elif arg == "access" & arg2 != "":
         Exists = CheckIfDirectoryExists(arg2)
         if Exists == False:
             Utils.OSPrint(f"Directory does not exist!")
@@ -86,20 +97,11 @@ def CommandDir(arg, arg2=""):
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
         os.system(f"cd {ConvertedDir}")
         Utils.OSPrint(f"Now located in {arg2}")
+    else:
+        return
 
 def CommandExec(program):
-    CurrentUser = open(".\\CurrentUser.txt")
-    login = CurrentUser.read()
-    CurrentUser.close()
-    if os.stat(".\\UserDirectory.txt").st_size == 0:
-        UserDirectory = f"A:/users/{login}/personal_files/"
-        file = open(".\\UserDirectory.txt", "w")
-        file.write(UserDirectory)
-        file.close()
-    else:
-        file = open(".\\UserDirectory.txt", "r")
-        UserDirectory = file.read()
-        file.close()
+    UserDirectory = GetUserDirectory()
 
     python_executable = sys.executable  # Path to the Python executable running this script
     python_path = os.environ.get("PYTHONPATH", "")  # Get the current PYTHONPATH
@@ -122,18 +124,8 @@ def CommandExec(program):
         Utils.OSPrint("Program not found.")
 
 def CommandOpen(File):
-    CurrentUser = open(".\\CurrentUser.txt")
-    login = CurrentUser.read()
-    CurrentUser.close()
-    if os.stat(".\\UserDirectory.txt").st_size == 0:
-        UserDirectory = f"A:/users/{login}/personal_files/"
-        file = open(".\\UserDirectory.txt", "w")
-        file.write(UserDirectory)
-        file.close()
-    else:
-        file = open(".\\UserDirectory.txt", "r")
-        UserDirectory = file.read()
-        file.close()
+    UserDirectory = GetUserDirectory()
+
     python_executable = sys.executable  # Path to the Python executable running this script
     python_path = os.environ.get("PYTHONPATH", "")  # Get the current PYTHONPATH
     env = os.environ.copy()  # Create a copy of the current environment variables
@@ -144,18 +136,8 @@ def CommandOpen(File):
     subprocess.run([python_executable, "TextEditor.py", File], env=env, shell=True, cwd = "./ROM/")
 
 def CommandList(File):
-    CurrentUser = open(".\\CurrentUser.txt")
-    login = CurrentUser.read()
-    CurrentUser.close()
-    if os.stat(".\\UserDirectory.txt").st_size == 0:
-        UserDirectory = f"A:/users/{login}/personal_files/"
-        file = open(".\\UserDirectory.txt", "w")
-        file.write(UserDirectory)
-        file.close()
-    else:
-        file = open(".\\UserDirectory.txt", "r")
-        UserDirectory = file.read()
-        file.close() 
+    UserDirectory = GetUserDirectory()
+
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     f = open(ConvertedDir + File, 'r')
@@ -166,18 +148,8 @@ def CommandList(File):
     f.close()
 
 def CommandCreate(Name, Type):
-    CurrentUser = open(".\\CurrentUser.txt")
-    login = CurrentUser.read()
-    CurrentUser.close()
-    if os.stat(".\\UserDirectory.txt").st_size == 0:
-        UserDirectory = f"A:/users/{login}/personal_files/"
-        file = open(".\\UserDirectory.txt", "w")
-        file.write(UserDirectory)
-        file.close()
-    else:
-        file = open(".\\UserDirectory.txt", "r")
-        UserDirectory = file.read()
-        file.close() 
+    UserDirectory = GetUserDirectory()
+
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     if Type == "-File":
@@ -199,18 +171,8 @@ def CommandCreate(Name, Type):
         return
 
 def CommandDelete(Name, Type):
-    CurrentUser = open(".\\CurrentUser.txt")
-    login = CurrentUser.read()
-    CurrentUser.close()
-    if os.stat(".\\UserDirectory.txt").st_size == 0:
-        UserDirectory = f"A:/users/{login}/personal_files/"
-        file = open(".\\UserDirectory.txt", "w")
-        file.write(UserDirectory)
-        file.close()
-    else:
-        file = open(".\\UserDirectory.txt", "r")
-        UserDirectory = file.read()
-        file.close() 
+    UserDirectory = GetUserDirectory()
+
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     if Type == "-File":
@@ -243,4 +205,8 @@ commands = {
     "create": CommandCreate,
     "delete": CommandDelete,
     "clear": CommandClear,
+}
+
+commandDefinitions = {
+    "help": "With no arguments the command prints all the available commands, with a specific command as the argument the command will tell you specific information about that command."
 }
