@@ -50,7 +50,7 @@ def GetUserDirectory():
 def CommandDir(arg, arg2=""):
     UserDirectory = GetUserDirectory()
         
-    if arg == "getname" & arg2 == "":
+    if arg == "getname" & str(arg2) == "":
         Utils.OSPrint(f"Current directory is: {UserDirectory}")
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
@@ -66,7 +66,7 @@ def CommandDir(arg, arg2=""):
         else:
             Utils.OSPrint(f"{FileCount} files detected. {FolderCount} sub-directories detected.")
         return
-    elif arg == "getname" & arg2 == "-P":
+    elif arg == "getname" & str(arg2) == "-P":
         Utils.OSPrint(f"Current directory is: {UserDirectory}")
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
@@ -84,7 +84,7 @@ def CommandDir(arg, arg2=""):
         else:
             Utils.OSPrint(f"{FileCount} files detected. {FolderCount} sub-directories detected.")
         return
-    elif arg == "access" & arg2 != "":
+    elif arg == "access" & str(arg2) != "":
         Exists = CheckIfDirectoryExists(arg2)
         if Exists == False:
             Utils.OSPrint(f"Directory does not exist!")
@@ -146,22 +146,11 @@ def CommandList(File):
         Utils.OSPrint(line)
     f.close()
 
-def CommandCreate(Name, Type):
-    UserDirectory = GetUserDirectory()
-
-def CommandClear(login):
+def CommandClear():
     os.system("cls")
 
-def CommandCreate(Name, Type, login):
-    if os.stat(".\\UserDirectory.txt").st_size == 0:
-        UserDirectory = f"A:/users/{login}/personal_files/"
-        file = open(".\\UserDirectory.txt", "w")
-        file.write(UserDirectory)
-        file.close()
-    else:
-        file = open(".\\UserDirectory.txt", "r")
-        UserDirectory = file.read()
-        file.close() 
+def CommandCreate(Name, Type):
+    UserDirectory = GetUserDirectory()
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     if Type == "-File":

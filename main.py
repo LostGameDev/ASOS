@@ -92,15 +92,17 @@ def OSMain(LoginFail):
 
         if command_lower in commands:
             if len(tokens) > 1:
-                try:
-                    commands[command_lower](*tokens[1:])  # Pass all arguments
-                except:
-                    Utils.OSPrint(f"Error command \"{command_lower}\" has too many arguments!")
+                commands[command_lower](*tokens[1:])  # Pass all arguments
+                #try:
+                    #commands[command_lower](*tokens[1:])  # Pass all arguments
+                #except:
+                    #Utils.OSPrint(f"Error command \"{command_lower}\" has too many arguments!")
             else:
-                try:
-                    commands[command_lower]()
-                except:
-                    Utils.OSPrint(f"Error command \"{command_lower}\" has too few arguments!")
+                commands[command_lower]()
+                #try:
+                    #commands[command_lower]()
+                #except:
+                    #Utils.OSPrint(f"Error command \"{command_lower}\" has too few arguments!")
 
         else:
             Utils.OSPrint("Invalid command. Enter \"help\" to see available commands.")
