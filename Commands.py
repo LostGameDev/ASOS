@@ -49,8 +49,10 @@ def GetUserDirectory():
 
 def CommandDir(arg, arg2=""):
     UserDirectory = GetUserDirectory()
-        
-    if arg == "getname" & str(arg2) == "":
+
+    #For some reason "&" does not work the same way as "and" in python. WHY?!?
+
+    if arg == "getname" and arg2 == "":
         Utils.OSPrint(f"Current directory is: {UserDirectory}")
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
@@ -66,7 +68,7 @@ def CommandDir(arg, arg2=""):
         else:
             Utils.OSPrint(f"{FileCount} files detected. {FolderCount} sub-directories detected.")
         return
-    elif arg == "getname" & str(arg2) == "-P":
+    elif arg == "getname" and arg2 == "-P":
         Utils.OSPrint(f"Current directory is: {UserDirectory}")
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
@@ -84,7 +86,7 @@ def CommandDir(arg, arg2=""):
         else:
             Utils.OSPrint(f"{FileCount} files detected. {FolderCount} sub-directories detected.")
         return
-    elif arg == "access" & str(arg2) != "":
+    elif arg == "access" and arg2 != "":
         Exists = CheckIfDirectoryExists(arg2)
         if Exists == False:
             Utils.OSPrint(f"Directory does not exist!")
@@ -193,9 +195,18 @@ def CommandDelete(Name, Type):
     else:
         Utils.OSPrint(f"Invalid Type \"{Type}\"...")
         return
-    
-def CommandClear():
-    os.system("cls")
+
+def CommandQuit():
+    Utils.OS_Shutdown("Shutting down")
+    f = open("quit.txt", "w")
+    f.write("True")
+    f.close()
+    CurrentUser = open("CurrentUser.txt", "w")
+    CurrentUser.write("")
+    CurrentUser.close()
+    UserDirectory = open("UserDirectory.txt", "w")
+    UserDirectory.write("")
+    UserDirectory.close()
 
 commands = {
     "help": CommandHelp,
@@ -207,6 +218,7 @@ commands = {
     "create": CommandCreate,
     "delete": CommandDelete,
     "clear": CommandClear,
+    "quit": CommandQuit
 }
 
 commandDefinitions = {

@@ -1,5 +1,6 @@
 import time
 import sys
+import os
 
 def OSPrint(value):
     print(f">> {value}")
@@ -19,6 +20,19 @@ def OSLoad(value, endmessage, speed):
         Completion += 1
     sys.stdout.write(f"\r>> {endmessage} ({Completion}%)                           ")
     sys.stdout.write("\n")
+
+def OS_Shutdown(value):
+    Completion = 0
+    while Completion != 3:
+        sys.stdout.write(f"\r>> {value}.  ")
+        time.sleep(0.1)
+        sys.stdout.write(f"\r>> {value}.. ")
+        time.sleep(0.1)
+        sys.stdout.write(f"\r>> {value}...")
+        time.sleep(0.1)
+        Completion += 1
+    sys.stdout.write("\n")
+    os.system("cls")
 
 def OSInput(CaseSensitive):
     value = input(f"// ")

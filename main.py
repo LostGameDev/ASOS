@@ -1,14 +1,17 @@
 import os
+import sys
 import time
 import Utils
 import json
-import Commands
 from Commands import commands
 
 AccreditationLevel = 0
 
 def LoadOS():
     os.system("cls")
+    f = open("quit.txt", "w")
+    f.write("False")
+    f.close()
     Utils.OSPrint("Aperture Science OS ver 0.1A (EXPERIMENTAL!) starting.")
     Utils.OSLoad("Booting sequence initializing...", "Booting sequence initialized.", "Slow")
     Utils.OSLoad("Booting sequence completing...", "Booting sequence completed.", "Slow")
@@ -27,6 +30,16 @@ def SetCurrentUser(login):
     file.write(login)
     file.close()
 
+def SetUserDirectory(login):
+    CurrentUser = open(".\\CurrentUser.txt")
+    login = CurrentUser.read()
+    CurrentUser.close()
+    if os.stat(".\\UserDirectory.txt").st_size == 0:
+        UserDirectory = f"A:/users/{login}/personal_files/"
+        file = open(".\\UserDirectory.txt", "w")
+        file.write(UserDirectory)
+        file.close()
+
 def CheckIfPasswordExists(login, password):
     f = open(f"./accounts/{login}.json")
     data = json.loads(f.read())
@@ -43,7 +56,6 @@ def tokenize_command(command):
     tokens = []
     current_token = ''
     in_quotes = False
-
     for char in command:
         if char == ' ' and not in_quotes:
             if current_token:
@@ -71,6 +83,7 @@ def OSMain(LoginFail):
         OSMain(True)
     Utils.OSPrint("Login successfully identified. Please enter your password below.")
     SetCurrentUser(login)
+    SetUserDirectory(login)
     password = Utils.OSInput(True)
     PasswordCheck = CheckIfPasswordExists(login, password)
     if PasswordCheck != True:
@@ -83,6 +96,11 @@ def OSMain(LoginFail):
     time.sleep(0.5)
     Utils.OSPrint(f"Hello, user \"{login}\". What do you want to do? Enter \"help\" to show commands. Enter \"dir getname\" to show current directory, and its files. Enter \"exec\" to run a program. Enter \"open\" to open a file.")
     while True:
+        f = open("quit.txt")
+        data = f.read()
+        f.close()
+        if data == "True":
+            sys.exit(0)
         command = Utils.OSInput(True)
         tokens = tokenize_command(command)
         try:
@@ -92,17 +110,15 @@ def OSMain(LoginFail):
 
         if command_lower in commands:
             if len(tokens) > 1:
-                commands[command_lower](*tokens[1:])  # Pass all arguments
-                #try:
-                    #commands[command_lower](*tokens[1:])  # Pass all arguments
-                #except:
-                    #Utils.OSPrint(f"Error command \"{command_lower}\" has too many arguments!")
+                try:
+                    commands[command_lower](*tokens[1:])  # Pass all arguments
+                except:
+                    Utils.OSPrint(f"Error command \"{command_lower}\" has too many arguments!")
             else:
-                commands[command_lower]()
-                #try:
-                    #commands[command_lower]()
-                #except:
-                    #Utils.OSPrint(f"Error command \"{command_lower}\" has too few arguments!")
+                try:
+                    commands[command_lower]()
+                except:
+                    Utils.OSPrint(f"Error command \"{command_lower}\" has too few arguments!")
 
         else:
             Utils.OSPrint("Invalid command. Enter \"help\" to see available commands.")
