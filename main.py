@@ -1,17 +1,20 @@
 import os
-import sys
 import time
 import Utils
 import json
+import configparser
 from Commands import commands
 
 AccreditationLevel = 0
+registry = configparser.ConfigParser()
+AdriveExists = True
 
 def LoadOS():
     os.system("cls")
-    f = open("quit.txt", "w")
-    f.write("False")
-    f.close()
+    registry.read('.\OSRegistry.ini')
+    registry.set('AOS', 'Quit', "False")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
     Utils.OSPrint("Aperture Science OS ver 0.1A (EXPERIMENTAL!) starting.")
     Utils.OSLoad("Booting sequence initializing...", "Booting sequence initialized.", "Slow")
     Utils.OSLoad("Booting sequence completing...", "Booting sequence completed.", "Slow")
@@ -26,19 +29,20 @@ def CheckIfLoginExists(login):
     return True
 
 def SetCurrentUser(login):
-    file = open(".\\CurrentUser.txt", "w")
-    file.write(login)
-    file.close()
+    registry.read('.\OSRegistry.ini')
+    registry.set('AOS', 'CurrentUser', login)
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
 
 def SetUserDirectory(login):
-    CurrentUser = open(".\\CurrentUser.txt")
-    login = CurrentUser.read()
-    CurrentUser.close()
-    if os.stat(".\\UserDirectory.txt").st_size == 0:
+    registry.read('.\OSRegistry.ini')
+    login = registry.get('AOS', 'CurrentUser')
+    if registry.get('AOS', 'UserDirectory') == "":
         UserDirectory = f"A:/users/{login}/personal_files/"
-        file = open(".\\UserDirectory.txt", "w")
-        file.write(UserDirectory)
-        file.close()
+        registry.read('.\OSRegistry.ini')
+        registry.set('AOS', 'UserDirectory', UserDirectory)
+        with open('.\OSRegistry.ini', "w") as registryfile:
+            registry.write(registryfile)
 
 def CheckIfPasswordExists(login, password):
     f = open(f"./accounts/{login}.json")
@@ -51,6 +55,17 @@ def GetAccreditationLevel(login):
     f = open(f"./accounts/{login}.json")
     data = json.loads(f.read())
     return data["accreditation"]
+
+def CheckIfADriveExists(login):
+    #This function checks if A drive exists and if a user folder exists if a user folder doesn't exist then it will create one
+    if os.path.exists("./A"):
+        if os.path.exists(f"./A/users/{login}/personal_files") != True:
+            os.mkdir("./A/users/")
+            os.mkdir(f"./A/users/{login}")
+            os.mkdir(f"./A/users/{login}/personal_files")
+        return True
+    else:
+        return False
 
 def tokenize_command(command):
     tokens = []
@@ -92,22 +107,24 @@ def OSMain(LoginFail):
     Utils.OSPrint(f"Password matching. Logging to account \"{login}\"")
     time.sleep(1)
     AccreditationLevel = GetAccreditationLevel(login)
+    AdriveExists = CheckIfADriveExists(login)
+    if AdriveExists != True:
+        Utils.OSPrint("A drive does not exist")
+        exit(1)
     Utils.OSPrint(f"Logged in. Account: \"{login}\". Level {AccreditationLevel} Accreditation.")
     time.sleep(0.5)
     Utils.OSPrint(f"Hello, user \"{login}\". What do you want to do? Enter \"help\" to show commands. Enter \"dir getname\" to show current directory, and its files. Enter \"exec\" to run a program. Enter \"open\" to open a file.")
     while True:
-        f = open("quit.txt")
-        data = f.read()
-        f.close()
-        if data == "True":
-            sys.exit(0)
+        registry.read(".\OSRegistry.ini")
+        if registry.get('AOS', 'Quit') == "True":
+            exit(0)
         command = Utils.OSInput(True)
         tokens = tokenize_command(command)
         try:
             command_lower = tokens[0].lower()
         except:
             command_lower = ""
-
+        #TODO Add better error handling here, instead of assuming that the command has too many / too few arguments!
         if command_lower in commands:
             if len(tokens) > 1:
                 try:

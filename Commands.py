@@ -4,6 +4,9 @@ import sys
 import shutil
 import Utils
 import time
+import configparser
+
+registry = configparser.ConfigParser()
 
 def CommandHelp(command=""):
     if command == "":
@@ -26,22 +29,21 @@ def CheckIfDirectoryExists(directory):
     return False
 
 def GetUserDirectory():
-    CurrentUser = open(".\\CurrentUser.txt")
-    login = CurrentUser.read()
-    CurrentUser.close()
-    if os.stat(".\\UserDirectory.txt").st_size == 0:
+    registry.read('.\OSRegistry.ini')
+    login = registry.get('AOS', 'CurrentUser')
+    if registry.get('AOS', 'UserDirectory') == "":
         UserDirectory = f"A:/users/{login}/personal_files/"
-        file = open(".\\UserDirectory.txt", "w")
-        file.write(UserDirectory)
-        file.close()
+        registry.read('.\OSRegistry.ini')
+        registry.set('AOS', 'UserDirectory', UserDirectory)
+        with open('.\OSRegistry.ini', "w") as registryfile:
+            registry.write(registryfile)
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
         os.system(f"cd {ConvertedDir}")
         return 
     else:
-        file = open(".\\UserDirectory.txt", "r")
-        UserDirectory = file.read()
-        file.close()
+        registry.read('.\OSRegistry.ini')
+        UserDirectory = registry.get('AOS', 'UserDirectory')
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
         os.system(f"cd {ConvertedDir}")
@@ -91,9 +93,10 @@ def CommandDir(arg, arg2=""):
         if Exists == False:
             Utils.OSPrint(f"Directory does not exist!")
             return
-        file = open(".\\UserDirectory.txt", "w")
-        file.write(arg2)
-        file.close()
+        registry.read('.\OSRegistry.ini')
+        registry.set('AOS', 'UserDirectory', arg2)
+        with open('.\OSRegistry.ini', "w") as registryfile:
+            registry.write(registryfile)
         UserDirectory = arg2
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
@@ -198,15 +201,18 @@ def CommandDelete(Name, Type):
 
 def CommandQuit():
     Utils.OS_Shutdown("Shutting down")
-    f = open("quit.txt", "w")
-    f.write("True")
-    f.close()
-    CurrentUser = open("CurrentUser.txt", "w")
-    CurrentUser.write("")
-    CurrentUser.close()
-    UserDirectory = open("UserDirectory.txt", "w")
-    UserDirectory.write("")
-    UserDirectory.close()
+    registry.read('.\OSRegistry.ini')
+    registry.set('AOS', 'Quit', "True")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
+    registry.read('.\OSRegistry.ini')
+    registry.set('AOS', 'CurrentUser', "")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
+    registry.read('.\OSRegistry.ini')
+    registry.set('AOS', 'UserDirectory', "")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
 
 commands = {
     "help": CommandHelp,
@@ -221,6 +227,7 @@ commands = {
     "quit": CommandQuit
 }
 
+#TODO: Add command definitions for all commands!
 commandDefinitions = {
     "help": "With no arguments the command prints all the available commands, with a specific command as the argument the command will tell you specific information about that command."
 }
