@@ -3,6 +3,7 @@ import time
 import Utils
 import json
 import configparser
+import winsound
 from Commands import commands
 
 AccreditationLevel = 0
@@ -20,12 +21,14 @@ def LoadOS():
     Utils.OSLoad("Booting sequence completing...", "Booting sequence completed.", "Slow")
     time.sleep(1)
     Utils.OSPrint("Running on kernel ApertureScienceKernel ver 1. Processing speed of 4294967296 bytes/ms.")
-    time.sleep(1)
+    winsound.PlaySound("./sounds/startup.wav", winsound.SND_FILENAME)
     OSMain(False)
 
 def CheckIfLoginExists(login):
     if os.path.exists(f"./accounts/{login}.json") == False:
+        winsound.PlaySound("./sounds/error2.wav", winsound.SND_FILENAME)
         return False
+    winsound.PlaySound("./sounds/correct.wav", winsound.SND_FILENAME)
     return True
 
 def SetCurrentUser(login):
@@ -48,7 +51,9 @@ def CheckIfPasswordExists(login, password):
     f = open(f"./accounts/{login}.json")
     data = json.loads(f.read())
     if data['password'] != password:
+        winsound.PlaySound("./sounds/error2.wav", winsound.SND_FILENAME)
         return False
+    winsound.PlaySound("./sounds/correct.wav", winsound.SND_FILENAME)
     return True
 
 def GetAccreditationLevel(login):
@@ -57,7 +62,7 @@ def GetAccreditationLevel(login):
     return data["accreditation"]
 
 def CheckIfADriveExists(login):
-    #This function checks if A drive exists and if a user folder exists if a user folder doesn't exist then it will create one
+    #This function checks if A drive exists, and if a user folder exists, if a user folder doesn't exist then it will create one
     if os.path.exists("./A"):
         if os.path.exists(f"./A/users/{login}/personal_files") != True:
             os.mkdir("./A/users/")
@@ -90,7 +95,7 @@ def OSMain(LoginFail):
     if LoginFail == True:
         Utils.OSPrint("Please enter your credentials. Enter login below.")
     else:
-        Utils.OSPrint("Welcome to Aperture Science OS. Please enter your credentials. Enter login below.")
+        Utils.OSPrint("Welcome to the Aperture Science OS. Please enter your credentials. Enter login below.")
     login = Utils.OSInput(True)
     LoginCheck = CheckIfLoginExists(login)
     if LoginCheck != True:
