@@ -293,6 +293,14 @@ def CommandQuit():
     with open('.\OSRegistry.ini', "w") as registryfile:
         registry.write(registryfile)
 
+def CommandAccountEditor():
+    python_executable = sys.executable  # Path to the Python executable running this script
+    python_path = os.environ.get("PYTHONPATH", "")  # Get the current PYTHONPATH
+    env = os.environ.copy()  # Create a copy of the current environment variables
+    env["PYTHONPATH"] = python_path  # Set the PYTHONPATH for the subprocess
+    Utils.OSLoad(f"Booting \"AccountEditor.py\"", f"Aperture Science Account Editor running.", "Normal")
+    subprocess.run([python_executable, "AccountEditor.py"], env=env, shell=True, cwd = "./ROM/")
+    #For some reason "AccountEditor.py" doesn't run? ill fix this later
 commands = {
     "help": CommandHelp,
     "dir": CommandDir,
@@ -305,6 +313,7 @@ commands = {
     "cls": CommandClear,
     "time": CommandTime,
     "sysinfo": CommandSysInfo,
+    "accounteditor": CommandAccountEditor,
     "quit": CommandQuit
 }
 
