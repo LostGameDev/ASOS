@@ -142,17 +142,42 @@ def CommandOpen(File):
     Utils.OSLoad(f"Booting \"TextEditor.py\"", f"Aperture Science Text Editor running. Accessing file \"{File}\"", "Normal")
     subprocess.run([python_executable, "TextEditor.py", "..\\" + ConvertedDir + File], env=env, shell=True, cwd = "./ROM/")
 
-def CommandCat(File):
+def CommandCat(File, Output=""):
     UserDirectory = GetUserDirectory()
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
-    f = open(ConvertedDir + File, 'r')
-    data = f.readlines()
-    for line in data:
-        line = line.rstrip('\n')
-        Utils.OSPrint(line)
-        time.sleep(0.1)
-    f.close()
+    files = File.split()
+    if len(files) == 1:
+        f = open(ConvertedDir + files[0], 'r')
+        data = f.readlines()
+        for line in data:
+            line = line.rstrip('\n')
+            Utils.OSPrint(line)
+            time.sleep(0.1)
+        f.close()
+    elif len(files) > 1:
+        output_data = []
+        for file_name in files:
+            try:
+                with open(ConvertedDir + file_name, 'r') as f:
+                    data = f.readlines()
+                    output_data.extend(data)
+                    if file_name != files[-1]:
+                        output_data.append('\n')
+            except FileNotFoundError:
+                Utils.OSPrint(f"File \"{file_name}\" not found.")
+        if Output:
+            with open(ConvertedDir + Output, 'w') as f:
+                f.writelines(output_data)
+        else:
+            for line in output_data:
+                line = line.rstrip('\n')
+                Utils.OSPrint(line)
+                time.sleep(0.1)
+    else:
+        Utils.OSPrint("No files specified.")
+
+
 
 def CommandClear():
     os.system("cls")
@@ -202,6 +227,9 @@ def CommandDelete(Name, Type):
         Utils.OSPrint(f"Invalid Type \"{Type}\"...")
         return
 
+def CommandTime():
+    Utils.OSPrint(time.ctime())
+
 def CommandQuit():
     Utils.OS_Shutdown("Shutting down")
     registry.read('.\OSRegistry.ini')
@@ -226,8 +254,8 @@ commands = {
     "clear": CommandClear,
     "create": CommandCreate,
     "delete": CommandDelete,
-    "clear": CommandClear,
     "cls": CommandClear,
+    "time": CommandTime,
     "quit": CommandQuit
 }
 
@@ -241,5 +269,6 @@ commandDefinitions = {
     "cls": "Clears the screen.",
     "create": "Creates a new file or folder in the current directory. It has the following arguments:\n\t<name>: The name of the file or folder to create.\n\t-Type <type>: Specifies whether to create a file (-File) or a folder (-Folder).",
     "delete": "Deletes a specified file or folder. It has the following arguments:\n\t<name>: The name of the file or folder to delete.\n\t-Type <type>: Specifies whether to delete a file (-File) or a folder (-Folder).",
-    "quit": "Shuts down the operating system."
+    "quit": "Shuts down the operating system.",
+    "time": "Prints the current time"
 }
