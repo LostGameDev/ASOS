@@ -89,6 +89,8 @@ def CommandDir(arg, arg2=""):
             Utils.OSPrint(f"{FileCount} files detected. {FolderCount} sub-directories detected.")
         return
     elif arg == "access" and arg2 != "":
+        if "./" in arg2:
+            arg2 = arg2.replace("./", UserDirectory)
         Exists = CheckIfDirectoryExists(arg2)
         if Exists == False:
             Utils.OSPrint(f"Directory does not exist!")
