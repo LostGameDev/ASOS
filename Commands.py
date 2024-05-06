@@ -19,7 +19,7 @@ def CommandHelp(command=""):
         if command in commandDefinitions:
             Utils.OSPrint(commandDefinitions[command])
         else:
-            Utils.OSPrint(f"Command \"{command}\" does not exist!")
+            Utils.OSPrint(f"Command \"{command}\" does not exist or does not have a definition!")
 
 def CheckIfDirectoryExists(directory):
     char = {"/":'\\', ":":"", '"':''}
@@ -140,15 +140,16 @@ def CommandOpen(File):
     Utils.OSLoad(f"Booting \"TextEditor.py\"", f"Aperture Science Text Editor running. Accessing file \"{File}\"", "Normal")
     subprocess.run([python_executable, "TextEditor.py", "..\\" + ConvertedDir + File], env=env, shell=True, cwd = "./ROM/")
 
-def CommandList(File):
+def CommandCat(File):
     UserDirectory = GetUserDirectory()
-
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     f = open(ConvertedDir + File, 'r')
     data = f.readlines()
     for line in data:
+        line = line.rstrip('\n')
         Utils.OSPrint(line)
+        time.sleep(0.1)
     f.close()
 
 def CommandClear():
@@ -219,15 +220,24 @@ commands = {
     "dir": CommandDir,
     "exec": CommandExec,
     "open": CommandOpen,
-    "list": CommandList,
+    "cat": CommandCat,
     "clear": CommandClear,
     "create": CommandCreate,
     "delete": CommandDelete,
     "clear": CommandClear,
+    "cls": CommandClear,
     "quit": CommandQuit
 }
 
-#TODO: Add command definitions for all commands!
 commandDefinitions = {
-    "help": "With no arguments the command prints all the available commands, with a specific command as the argument the command will tell you specific information about that command."
+    "help": "Prints all available commands or provides specific information about a command. It has the following arguments:\n\t<command>: The name of the command to help the user with.",
+    "dir": "Used to list files and directories in the current directory or change the current directory. It has the following arguments:\n\tgetname: Prints the current directory and the number of files and subdirectories.\n\tgetname -P: Prints the current directory, the number of files and subdirectories, and lists all files and subdirectories.\n\taccess <directory>: Changes the current directory to the specified directory.",
+    "exec": "Executes a specified Python program in the current directory. It has the following arguments:\n\t<program>: The name of the Python program to execute.",
+    "open": "Opens a specified file in the default text editor. It has the following arguments:\n\t<file>: The name of the file to open.",
+    "cat": "Lists the contents of a specified file however if given two or more files it will concatenate them displaying them directly after each other. It has the following arguments:\n\t<file>: The name of the file(s) to list.\n\t<output>: The name of the file to output too.",
+    "clear": "Clears the screen.",
+    "cls": "Clears the screen.",
+    "create": "Creates a new file or folder in the current directory. It has the following arguments:\n\t<name>: The name of the file or folder to create.\n\t-Type <type>: Specifies whether to create a file (-File) or a folder (-Folder).",
+    "delete": "Deletes a specified file or folder. It has the following arguments:\n\t<name>: The name of the file or folder to delete.\n\t-Type <type>: Specifies whether to delete a file (-File) or a folder (-Folder).",
+    "quit": "Shuts down the operating system."
 }

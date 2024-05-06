@@ -129,18 +129,25 @@ def OSMain(LoginFail):
             command_lower = tokens[0].lower()
         except:
             command_lower = ""
-        #TODO Add better error handling here, instead of assuming that the command has too many / too few arguments!
         if command_lower in commands:
             if len(tokens) > 1:
                 try:
                     commands[command_lower](*tokens[1:])  # Pass all arguments
-                except:
-                    Utils.OSPrint(f"Error command \"{command_lower}\" has too many arguments!")
+                except Exception as e:
+                    if "takes 1 positional argument" in str(e):
+                        Utils.OSPrint(f"Error command \"{command_lower}\" has too many arguments!")
+                    elif "takes from 1 to 2 positional arguments" in str(e):
+                        Utils.OSPrint(f"Error command \"{command_lower}\" has too many arguments!")
+                    else:
+                        Utils.OSPrint(f"Unknown Error: {e}")
             else:
                 try:
                     commands[command_lower]()
-                except:
-                    Utils.OSPrint(f"Error command \"{command_lower}\" has too few arguments!")
+                except Exception as e:
+                    if "missing 1 required positional argument" in str(e):
+                        Utils.OSPrint(f"Error command \"{command_lower}\" has too few arguments!")
+                    else:
+                        Utils.OSPrint(f"Unknown Error: {e}")
 
         else:
             Utils.OSPrint("Invalid command. Enter \"help\" to see available commands.")
