@@ -1,10 +1,16 @@
+import json
 import os
 import subprocess
 import sys
 import shutil
+import threading
 import Utils
 import time
 import configparser
+import platform
+import psutil
+import cpuinfo
+from queue import Queue
 
 registry = configparser.ConfigParser()
 
@@ -177,8 +183,6 @@ def CommandCat(File, Output=""):
     else:
         Utils.OSPrint("No files specified.")
 
-
-
 def CommandClear():
     os.system("cls")
 
@@ -230,6 +234,50 @@ def CommandDelete(Name, Type):
 def CommandTime():
     Utils.OSPrint(time.ctime())
 
+def get_cpu_info(result_queue):
+    cpu_info = cpuinfo.get_cpu_info()['brand_raw']
+    result_queue.put(cpu_info)
+
+def get_cpu_info_load():
+    #dont ask...
+    Utils.OSLoad("Getting system information.", "System information acquired", "Slow")
+
+def CommandSysInfo():
+    #didn't think i would have to add mutithreading for this command to work but here we are!
+    registry.read('.\OSRegistry.ini')
+    OSVersion = registry.get('AOS', 'version')
+    login = registry.get('AOS', 'currentuser')
+    f = open(f"./accounts/{login}.json")
+    data = json.loads(f.read())
+    AccreditationLevel = data["accreditation"]
+    CPUArchitecture = platform.machine()
+    CPUFamily = platform.processor()
+    result_queue = Queue()
+    cpu_thread = threading.Thread(target=get_cpu_info, args=(result_queue,))
+    os_load_thread = threading.Thread(target=get_cpu_info_load)
+    cpu_thread.start()
+    os_load_thread.start()
+    cpu_thread.join()
+    os_load_thread.join()
+    CPUName = result_queue.get()
+    Cpu = ' '.join([str(CPUName), str(CPUFamily)])
+    CPUCores = os.cpu_count()
+    Ram = int(round(psutil.virtual_memory().total / (1024. **3)))
+    Utils.OSPrint("System Info: ")
+    time.sleep(0.1)
+    Utils.OSPrint(f"Operating System Version: {OSVersion}")
+    time.sleep(0.1)
+    Utils.OSPrint(f"Current User: {login}, Accreditation Level: {AccreditationLevel}")
+    time.sleep(0.1)
+    Utils.OSPrint(f"System Architecture: {CPUArchitecture}")
+    time.sleep(0.1)
+    Utils.OSPrint(f"Processor: {Cpu}")
+    time.sleep(0.1)
+    Utils.OSPrint(f"CPU Cores: {CPUCores}")
+    time.sleep(0.1)
+    Utils.OSPrint(f"Memory: {Ram} GB")
+    time.sleep(0.1)
+
 def CommandQuit():
     Utils.OS_Shutdown("Shutting down")
     registry.read('.\OSRegistry.ini')
@@ -256,6 +304,7 @@ commands = {
     "delete": CommandDelete,
     "cls": CommandClear,
     "time": CommandTime,
+    "sysinfo": CommandSysInfo,
     "quit": CommandQuit
 }
 
@@ -270,5 +319,6 @@ commandDefinitions = {
     "create": "Creates a new file or folder in the current directory. It has the following arguments:\n\t<name>: The name of the file or folder to create.\n\t-Type <type>: Specifies whether to create a file (-File) or a folder (-Folder).",
     "delete": "Deletes a specified file or folder. It has the following arguments:\n\t<name>: The name of the file or folder to delete.\n\t-Type <type>: Specifies whether to delete a file (-File) or a folder (-Folder).",
     "quit": "Shuts down the operating system.",
-    "time": "Prints the current time"
+    "time": "Prints the current time",
+    "sysinfo": "Prints system information"
 }

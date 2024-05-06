@@ -9,6 +9,7 @@ from Commands import commands
 AccreditationLevel = 0
 registry = configparser.ConfigParser()
 AdriveExists = True
+OSVersion = ""
 
 def LoadOS():
     os.system("cls")
@@ -16,9 +17,10 @@ def LoadOS():
     registry.set('AOS', 'Quit', "False")
     with open('.\OSRegistry.ini', "w") as registryfile:
         registry.write(registryfile)
-    Utils.OSPrint("Aperture Science OS ver 0.1A (EXPERIMENTAL!) starting.")
+    OSVersion = registry.get('AOS', 'version')
+    Utils.OSPrint(f"{OSVersion} starting.")
     Utils.OSLoad("Booting sequence initializing...", "Booting sequence initialized.", "Slow")
-    Utils.OSLoad("Booting sequence completing...", "Booting sequence completed.", "Slow")
+    Utils.OSLoad("Booting sequence completing...", "Booting sequence completed.", "Normal")
     time.sleep(1)
     Utils.OSPrint("Running on kernel ApertureScienceKernel ver 1. Processing speed of 4294967296 bytes/ms.")
     winsound.PlaySound("./sounds/startup.wav", winsound.SND_FILENAME)
