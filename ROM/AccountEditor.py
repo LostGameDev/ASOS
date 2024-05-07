@@ -1,16 +1,27 @@
 import json
-import sys
-sys.path.append("..\\")
-import Utils
+import aosAPI
 
 def main_func(create, account=""):
     if create == True:
-        firstname = Utils.OSInput("Enter first name: ")
-        lastname = Utils.OSInput("Enter last name: ")
-        password = Utils.OSInput("Enter password: ")
-        accreditationlevel = int(Utils.OSInput("Enter accreditation level: "))
-        email = Utils.OSInput("Enter email: ")
-        accountname = firstname + "_" + lastname[0]
+        aosAPI.AOSPrint("Enter first name")
+        firstname = aosAPI.AOSInput(True)
+        aosAPI.AOSPrint("Enter last name")
+        lastname = aosAPI.AOSInput(True)
+        aosAPI.AOSPrint("Enter password")
+        password = aosAPI.AOSInput(True)
+        aosAPI.AOSPrint("Enter accreditation level")
+        accreditationlevel = int(aosAPI.AOSInput(False))
+        aosAPI.AOSPrint("Enter email")
+        email = aosAPI.AOSInput(False)
+        firstname = firstname.replace(" ", "")
+        firstname = firstname.replace("_", "")
+        lastname = lastname.replace(" ", "")
+        lastname = lastname.replace("_", "")
+        if accreditationlevel < 1:
+            accreditationlevel = 1
+        elif accreditationlevel > 3:
+            accreditationlevel = 3
+        accountname = firstname.lower() + "_" + lastname[0].lower()
         data = {
             "password": password,
             "accreditation": accreditationlevel,
@@ -19,20 +30,16 @@ def main_func(create, account=""):
         }
 
         with open(f"../accounts/{accountname}.json", "w") as account_json:
-            json.dump(data, account_json)
+            json.dump(data, account_json, indent=4)
     else:
         pass
-
-def start():
-    editType = Utils.OSInput("Do you want to create a new account or edit an existing one? (Create or Edit): ")
-    editType = editType.lower()
-    if editType == "create":
-        main_func(True)
-    elif editType == "edit":
-        accountToEdit = Utils.OSInput("Enter the account name you want to edit: ")
-        main_func(False, accountToEdit)
-    else:
-        Utils.OSPrint(f"Error: {editType} unrecognized please choose Create or Edit!")
-        start()
-
-start()
+aosAPI.AOSPrint("Do you want to create a new account or edit an existing one? (Create or Edit)")
+editType = aosAPI.AOSInput(False)
+if editType == "create":
+    main_func(True)
+elif editType == "edit":
+    aosAPI.AOSPrint("Enter the account name you want to edit")
+    accountToEdit = aosAPI.AOSInput(False)
+    main_func(False, accountToEdit)
+else:
+    aosAPI.AOSPrint(f"Error: {editType} unrecognized")

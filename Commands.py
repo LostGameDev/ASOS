@@ -300,7 +300,6 @@ def CommandAccountEditor():
     env["PYTHONPATH"] = python_path  # Set the PYTHONPATH for the subprocess
     Utils.OSLoad(f"Booting \"AccountEditor.py\"", f"Aperture Science Account Editor running.", "Normal")
     subprocess.run([python_executable, "AccountEditor.py"], env=env, shell=True, cwd = "./ROM/")
-    #For some reason "AccountEditor.py" doesn't run? ill fix this later
 commands = {
     "help": CommandHelp,
     "dir": CommandDir,
@@ -313,7 +312,7 @@ commands = {
     "cls": CommandClear,
     "time": CommandTime,
     "sysinfo": CommandSysInfo,
-    "accounteditor": CommandAccountEditor,
+    "edit_account": CommandAccountEditor,
     "quit": CommandQuit
 }
 
@@ -329,5 +328,6 @@ commandDefinitions = {
     "delete": "Deletes a specified file or folder. It has the following arguments:\n\t<name>: The name of the file or folder to delete.\n\t-Type <type>: Specifies whether to delete a file (-File) or a folder (-Folder).",
     "quit": "Shuts down the operating system.",
     "time": "Prints the current time",
-    "sysinfo": "Prints system information"
+    "sysinfo": "Prints system information",
+    "edit_account": "Runs the built-in account editor allowing for users to edit or create accounts only useable for accounts with an accreditation level of 3"
 }

@@ -67,8 +67,10 @@ def CheckIfADriveExists(login):
     #This function checks if A drive exists, and if a user folder exists, if a user folder doesn't exist then it will create one
     if os.path.exists("./A"):
         if os.path.exists(f"./A/users/{login}/personal_files") != True:
-            os.mkdir("./A/users/")
-            os.mkdir(f"./A/users/{login}")
+            if os.path.exists(f"./A/users/") != True:
+                os.mkdir("./A/users/")
+            if os.path.exists(f"./A/users/{login}") != True:
+                os.mkdir(f"./A/users/{login}")
             os.mkdir(f"./A/users/{login}/personal_files")
         return True
     else:
