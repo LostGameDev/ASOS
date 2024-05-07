@@ -1,3 +1,4 @@
+import json
 import time
 import sys
 import os
@@ -39,3 +40,9 @@ def OSInput(CaseSensitive):
     if CaseSensitive != True:
         value = value.lower()
     return value
+
+def GetAccountAccredidation(login):
+    f = open(f"./accounts/{login}.json")
+    data = json.loads(f.read())
+    accreditationlvl = data["accreditation"]
+    return int(accreditationlvl)

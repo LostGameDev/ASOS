@@ -296,10 +296,8 @@ def CommandQuit():
 def CommandAccountEditor():
     registry.read('.\OSRegistry.ini')
     CurrentUser = registry.get('AOS', 'CurrentUser')
-    f = open(f"./accounts/{CurrentUser}.json")
-    data = json.loads(f.read())
-    accreditationlvl = data["accreditation"]
-    if int(accreditationlvl) == 3:
+    accreditationlvl = Utils.GetAccountAccredidation(CurrentUser)
+    if accreditationlvl == 3:
         python_executable = sys.executable  # Path to the Python executable running this script
         python_path = os.environ.get("PYTHONPATH", "")  # Get the current PYTHONPATH
         env = os.environ.copy()  # Create a copy of the current environment variables
