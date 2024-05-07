@@ -294,12 +294,21 @@ def CommandQuit():
         registry.write(registryfile)
 
 def CommandAccountEditor():
-    python_executable = sys.executable  # Path to the Python executable running this script
-    python_path = os.environ.get("PYTHONPATH", "")  # Get the current PYTHONPATH
-    env = os.environ.copy()  # Create a copy of the current environment variables
-    env["PYTHONPATH"] = python_path  # Set the PYTHONPATH for the subprocess
-    Utils.OSLoad(f"Booting \"AccountEditor.py\"", f"Aperture Science Account Editor running.", "Normal")
-    subprocess.run([python_executable, "AccountEditor.py"], env=env, shell=True, cwd = "./ROM/")
+    registry.read('.\OSRegistry.ini')
+    CurrentUser = registry.get('AOS', 'CurrentUser')
+    f = open(f"./accounts/{CurrentUser}.json")
+    data = json.loads(f.read())
+    accreditationlvl = data["accreditation"]
+    if int(accreditationlvl) == 3:
+        python_executable = sys.executable  # Path to the Python executable running this script
+        python_path = os.environ.get("PYTHONPATH", "")  # Get the current PYTHONPATH
+        env = os.environ.copy()  # Create a copy of the current environment variables
+        env["PYTHONPATH"] = python_path  # Set the PYTHONPATH for the subprocess
+        Utils.OSLoad(f"Booting \"AccountEditor.py\"", f"Aperture Science Account Editor running.", "Normal")
+        subprocess.run([python_executable, "AccountEditor.py"], env=env, shell=True, cwd = "./ROM/")
+    else:
+        Utils.OSPrint("You do not have permission to use the \"Aperture Science Account Editor\"")
+
 commands = {
     "help": CommandHelp,
     "dir": CommandDir,
@@ -312,7 +321,7 @@ commands = {
     "cls": CommandClear,
     "time": CommandTime,
     "sysinfo": CommandSysInfo,
-    "edit_account": CommandAccountEditor,
+    "account_edit": CommandAccountEditor,
     "quit": CommandQuit
 }
 
@@ -329,5 +338,5 @@ commandDefinitions = {
     "quit": "Shuts down the operating system.",
     "time": "Prints the current time",
     "sysinfo": "Prints system information",
-    "edit_account": "Runs the built-in account editor allowing for users to edit or create accounts only useable for accounts with an accreditation level of 3"
+    "account_edit": "Runs the built-in account editor allowing for users to edit or create accounts only useable for accounts with an accreditation level of 3"
 }
