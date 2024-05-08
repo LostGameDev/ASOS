@@ -10,6 +10,7 @@ import configparser
 import platform
 import psutil
 import cpuinfo
+import struct
 from queue import Queue
 
 registry = configparser.ConfigParser()
@@ -43,6 +44,7 @@ def GetUserDirectory():
         registry.set('AOS', 'UserDirectory', UserDirectory)
         with open('.\OSRegistry.ini', "w") as registryfile:
             registry.write(registryfile)
+            registryfile.close()
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
         os.system(f"cd {ConvertedDir}")
@@ -68,7 +70,8 @@ def CommandDir(arg, arg2=""):
         FolderCount = 0
         for item in os.listdir(ConvertedDir):
             if os.path.isfile(os.path.join(ConvertedDir, item)):
-                FileCount += 1
+                if ".meta" not in item: 
+                    FileCount += 1
             if os.path.isdir(os.path.join(ConvertedDir, item)):
                 FolderCount += 1
         if FileCount == 0 and FolderCount == 0:
@@ -84,8 +87,9 @@ def CommandDir(arg, arg2=""):
         FolderCount = 0
         for item in os.listdir(ConvertedDir):
             if os.path.isfile(os.path.join(ConvertedDir, item)):
-                FileCount += 1
-                Utils.OSPrint(f"File: {item}")
+                if ".meta" not in item: 
+                    FileCount += 1
+                    Utils.OSPrint(f"File: {item}")
             if os.path.isdir(os.path.join(ConvertedDir, item)):
                 FolderCount += 1
                 Utils.OSPrint(f"Sub-directory: {item}")
@@ -97,14 +101,22 @@ def CommandDir(arg, arg2=""):
     elif arg == "access" and arg2 != "":
         if "./" in arg2:
             arg2 = arg2.replace("./", UserDirectory)
+        if "A:/users/" in arg2:
+            registry.read('.\OSRegistry.ini')
+            login = registry.get('AOS', 'currentuser')
+            accredidation = Utils.GetAccountAccredidation(login)
+            if login not in arg2 and accredidation != 3:
+                Utils.OSPrint(f"Error: Cannot access you do not have permission to access this directory")
+                return
         Exists = CheckIfDirectoryExists(arg2)
         if Exists == False:
-            Utils.OSPrint(f"Directory does not exist!")
+            Utils.OSPrint(f"Error: Directory does not exist!")
             return
         registry.read('.\OSRegistry.ini')
         registry.set('AOS', 'UserDirectory', arg2)
         with open('.\OSRegistry.ini', "w") as registryfile:
             registry.write(registryfile)
+            registryfile.close()
         UserDirectory = arg2
         char = {"/":'\\', ":":"", '"':''}
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
@@ -145,6 +157,15 @@ def CommandOpen(File):
     env["PYTHONPATH"] = python_path  # Set the PYTHONPATH for the subprocess
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
+    FileMetadata = open(ConvertedDir + File + ".meta", "rb")
+    min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+    FileMetadata.close()
+    registry.read('.\OSRegistry.ini')
+    login = registry.get('AOS', 'currentuser')
+    accredidation = Utils.GetAccountAccredidation(login)
+    if min_accredidation > accredidation:
+        Utils.OSPrint(f"Error: Cannot open \"{File}\" you do not have permission to access this file")
+        return
     Utils.OSLoad(f"Booting \"TextEditor.py\"", f"Aperture Science Text Editor running. Accessing file \"{File}\"", "Normal")
     subprocess.run([python_executable, "TextEditor.py", "..\\" + ConvertedDir + File], env=env, shell=True, cwd = "./ROM/")
 
@@ -152,6 +173,9 @@ def CommandCat(File, Output=""):
     UserDirectory = GetUserDirectory()
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
+    if ".meta" in File:
+        Utils.OSPrint(f"File \"{file_name}\" not found.")
+        return
     files = File.split()
     if len(files) == 1:
         f = open(ConvertedDir + files[0], 'r')
@@ -175,6 +199,7 @@ def CommandCat(File, Output=""):
         if Output:
             with open(ConvertedDir + Output, 'w') as f:
                 f.writelines(output_data)
+                f.close()
         else:
             for line in output_data:
                 line = line.rstrip('\n')
@@ -191,19 +216,55 @@ def CommandCreate(Name, Type):
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     if Type == "-File":
-        try:
-            Utils.OSLoad(f"Creating file \"{Name}\"...", f"File \"{Name}\" created.", "Normal")
-            open(ConvertedDir + Name, "w")
-        except:
-            Utils.OSPrint(f"Failed to create file \"{Name}\"")
-        return
+        if os.path.isfile(ConvertedDir + Name) != True:
+            try:
+                registry.read('.\OSRegistry.ini')
+                CurrentUser = registry.get('AOS', 'CurrentUser')
+                accreditationlvl = Utils.GetAccountAccredidation(CurrentUser)
+                Utils.OSPrint(f"Enter the lowest level of accreditation level that is required to access this file")
+                Accreditationlevel = int(Utils.OSInput(False))
+                while Accreditationlevel > accreditationlvl:
+                    Accreditationlevel -= 1;
+                if Accreditationlevel < 1:
+                    Accreditationlevel = 1
+                elif Accreditationlevel > 3:
+                    Accreditationlevel = 3
+                Utils.OSLoad(f"Creating file \"{Name}\"...", f"File \"{Name}\" created.", "Normal")
+                open(ConvertedDir + Name, "w")
+                with open(ConvertedDir + Name + ".meta", "wb") as file:
+                    binary_data = struct.pack('i', Accreditationlevel)
+                    file.write(binary_data)
+                    file.close()
+            except:
+                Utils.OSPrint(f"Failed to create file \"{Name}\"")
+                return
+        else:
+            Utils.OSPrint(f"Failed to create file \"{Name}\" file already exists")
     elif Type == "-Folder":
-        try:
-            Utils.OSLoad(f"Creating Folder \"{Name}\"...", f"Folder \"{Name}\" created.", "Normal")
-            os.mkdir(ConvertedDir + Name)
-        except:
-            Utils.OSPrint(f"Failed to create folder \"{Name}\"")
-        return
+        if os.path.exists(ConvertedDir + Name) != True:
+            try:
+                registry.read('.\OSRegistry.ini')
+                CurrentUser = registry.get('AOS', 'CurrentUser')
+                accreditationlvl = Utils.GetAccountAccredidation(CurrentUser)
+                Utils.OSPrint(f"Enter the lowest level of accreditation level that is required to access this file")
+                Accreditationlevel = int(Utils.OSInput(False))
+                while Accreditationlevel > accreditationlvl:
+                    Accreditationlevel -= 1;
+                if Accreditationlevel < 1:
+                    Accreditationlevel = 1
+                elif Accreditationlevel > 3:
+                    Accreditationlevel = 3
+                Utils.OSLoad(f"Creating Folder \"{Name}\"...", f"Folder \"{Name}\" created.", "Normal")
+                os.mkdir(ConvertedDir + Name)
+                with open(ConvertedDir + Name + ".meta", "wb") as file:
+                    binary_data = struct.pack('i', Accreditationlevel)
+                    file.write(binary_data)
+                    file.close()
+            except:
+                Utils.OSPrint(f"Failed to create folder \"{Name}\"")
+                return
+        else:
+            Utils.OSPrint(f"Failed to create folder \"{Name}\" folder already exists")
     else:
         Utils.OSPrint(f"Invalid Type \"{Type}\"...")
         return
@@ -215,15 +276,35 @@ def CommandDelete(Name, Type):
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     if Type == "-File":
         try:
+            FileMetadata = open(ConvertedDir + Name + ".meta", "rb")
+            min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+            FileMetadata.close()
+            registry.read('.\OSRegistry.ini')
+            login = registry.get('AOS', 'currentuser')
+            accredidation = Utils.GetAccountAccredidation(login)
+            if min_accredidation > accredidation:
+                Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this file")
+                return
             Utils.OSLoad(f"Deleting file \"{Name}\"...", f"File \"{Name}\" deleted.", "Normal")
-            os.remove(ConvertedDir + Name + ".txt")
-        except:
+            os.remove(ConvertedDir + Name)
+            os.remove(ConvertedDir + Name + ".meta")
+        except FileNotFoundError:
             Utils.OSPrint(f"File \"{Name}\" does not exist!")
         return
     elif Type == "-Folder":
         try:
+            FileMetadata = open(ConvertedDir + Name + ".meta", "rb")
+            min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+            FileMetadata.close()
+            registry.read('.\OSRegistry.ini')
+            login = registry.get('AOS', 'currentuser')
+            accredidation = Utils.GetAccountAccredidation(login)
+            if min_accredidation > accredidation:
+                Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this directory")
+                return
             Utils.OSLoad(f"Deleting Folder \"{Name}\"...", f"Folder \"{Name}\" deleted.", "Normal")
             shutil.rmtree(ConvertedDir + Name)
+            os.remove(ConvertedDir + Name + ".meta")
         except:
             Utils.OSPrint(f"Folder \"{Name}\" does not exist!")
         return
@@ -249,6 +330,7 @@ def CommandSysInfo():
     login = registry.get('AOS', 'currentuser')
     f = open(f"./accounts/{login}.json")
     data = json.loads(f.read())
+    f.close()
     AccreditationLevel = data["accreditation"]
     CPUArchitecture = platform.machine()
     CPUFamily = platform.processor()

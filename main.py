@@ -4,6 +4,7 @@ import Utils
 import json
 import configparser
 import winsound
+import struct
 from Commands import commands
 
 AccreditationLevel = 0
