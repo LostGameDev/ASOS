@@ -70,7 +70,7 @@ def CommandDir(arg, arg2=""):
         FolderCount = 0
         for item in os.listdir(ConvertedDir):
             if os.path.isfile(os.path.join(ConvertedDir, item)):
-                if ".meta" not in item: 
+                if ".meta" not in item or ".gitignore" not in item: 
                     FileCount += 1
             if os.path.isdir(os.path.join(ConvertedDir, item)):
                 FolderCount += 1
@@ -87,7 +87,7 @@ def CommandDir(arg, arg2=""):
         FolderCount = 0
         for item in os.listdir(ConvertedDir):
             if os.path.isfile(os.path.join(ConvertedDir, item)):
-                if ".meta" not in item: 
+                if ".meta" not in item or ".gitignore" not in item: 
                     FileCount += 1
                     Utils.OSPrint(f"File: {item}")
             if os.path.isdir(os.path.join(ConvertedDir, item)):
@@ -218,6 +218,9 @@ def CommandCreate(Name, Type):
     if Type == "-File":
         if os.path.isfile(ConvertedDir + Name) != True:
             try:
+                if UserDirectory == "A:/users/":
+                    Utils.OSPrint(f"Error: Cannot create \"{Name}\" you do not have permission to create files in this directory.")
+                    return
                 registry.read('.\OSRegistry.ini')
                 CurrentUser = registry.get('AOS', 'CurrentUser')
                 accreditationlvl = Utils.GetAccountAccredidation(CurrentUser)
@@ -243,6 +246,9 @@ def CommandCreate(Name, Type):
     elif Type == "-Folder":
         if os.path.exists(ConvertedDir + Name) != True:
             try:
+                if UserDirectory == "A:/users/":
+                    Utils.OSPrint(f"Error: Cannot create \"{Name}\" you do not have permission to create folders in this directory.")
+                    return
                 registry.read('.\OSRegistry.ini')
                 CurrentUser = registry.get('AOS', 'CurrentUser')
                 accreditationlvl = Utils.GetAccountAccredidation(CurrentUser)
@@ -276,6 +282,9 @@ def CommandDelete(Name, Type):
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     if Type == "-File":
         try:
+            if UserDirectory == "A:/users/":
+                Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this file")
+                return
             FileMetadata = open(ConvertedDir + Name + ".meta", "rb")
             min_accredidation = struct.unpack('i', FileMetadata.read())[0]
             FileMetadata.close()
@@ -293,6 +302,12 @@ def CommandDelete(Name, Type):
         return
     elif Type == "-Folder":
         try:
+            if Name in Utils.SystemCriticalFolders:
+                Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this directory")
+                return
+            if UserDirectory == "A:/users/":
+                Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this directory")
+                return
             FileMetadata = open(ConvertedDir + Name + ".meta", "rb")
             min_accredidation = struct.unpack('i', FileMetadata.read())[0]
             FileMetadata.close()

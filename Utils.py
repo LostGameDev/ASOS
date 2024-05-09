@@ -3,6 +3,8 @@ import time
 import sys
 import os
 
+SystemCriticalFolders = ["users"]
+
 def OSPrint(value):
     print(f">> {value}")
 
