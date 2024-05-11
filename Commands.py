@@ -158,7 +158,10 @@ def CommandOpen(File):
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     FileMetadata = open(ConvertedDir + File + ".meta", "rb")
-    min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+    try:
+        min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+    except:
+        min_accredidation = 1
     FileMetadata.close()
     registry.read('.\OSRegistry.ini')
     login = registry.get('AOS', 'currentuser')
@@ -286,7 +289,10 @@ def CommandDelete(Name, Type):
                 Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this file")
                 return
             FileMetadata = open(ConvertedDir + Name + ".meta", "rb")
-            min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+            try:
+                min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+            except:
+                min_accredidation = 1
             FileMetadata.close()
             registry.read('.\OSRegistry.ini')
             login = registry.get('AOS', 'currentuser')
@@ -309,7 +315,10 @@ def CommandDelete(Name, Type):
                 Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this directory")
                 return
             FileMetadata = open(ConvertedDir + Name + ".meta", "rb")
-            min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+            try:
+                min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+            except:
+                min_accredidation = 1
             FileMetadata.close()
             registry.read('.\OSRegistry.ini')
             login = registry.get('AOS', 'currentuser')
@@ -404,6 +413,25 @@ def CommandAccountEditor():
     else:
         Utils.OSPrint("You do not have permission to use the \"Aperture Science Account Editor\"")
 
+def CommandDeleteAccount(account):
+    registry.read('.\OSRegistry.ini')
+    CurrentUser = registry.get('AOS', 'CurrentUser')
+    accreditationlvl = Utils.GetAccountAccredidation(CurrentUser)
+    if accreditationlvl == 3:
+        registry.read('.\OSRegistry.ini')
+        CurrentUser = registry.get('AOS', 'CurrentUser')
+        if account == CurrentUser:
+            Utils.OSPrint(f"Error: Cannot delete account \"{account}\" you cannot delete your own account")
+            return
+        Utils.OSLoad(f"Deleting account: {account}", f"Account {account} deleted", "Normal")
+        try:
+            os.remove(f"./accounts/{account}.json")
+        except:
+            Utils.OSPrint(f"Error: Failed to delete account \"{account}\" does this account exist?")
+            return
+    else:
+        Utils.OSPrint(f"Error: Cannot delete account \"{account}\" you do not have permission to run this command")
+
 commands = {
     "help": CommandHelp,
     "dir": CommandDir,
@@ -417,6 +445,7 @@ commands = {
     "time": CommandTime,
     "sysinfo": CommandSysInfo,
     "account_edit": CommandAccountEditor,
+    "delete_account": CommandDeleteAccount,
     "quit": CommandQuit
 }
 
@@ -433,5 +462,6 @@ commandDefinitions = {
     "quit": "Shuts down the operating system.",
     "time": "Prints the current time",
     "sysinfo": "Prints system information",
-    "account_edit": "Runs the built-in account editor allowing for users to edit or create accounts only useable for accounts with an accreditation level of 3"
+    "account_edit": "Runs the built-in account editor allowing for users to edit or create accounts only useable for accounts with an accreditation level of 3",
+    "delete_account": "Deletes a specified account, you cannot delete the currently logged-in account, only useable for accounts with an accreditation level of 3. It has the following arguments:\n\t<account>: The name of the account to delete"
 }

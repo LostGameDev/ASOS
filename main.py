@@ -155,4 +155,7 @@ def OSMain(LoginFail):
 
         else:
             Utils.OSPrint("Invalid command. Enter \"help\" to see available commands.")
-LoadOS()
+try:
+    LoadOS()
+finally:
+    commands["quit"]()
