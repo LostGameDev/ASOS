@@ -1,6 +1,7 @@
 # Aperture Science OS (ASOS)
 
-ASOS is an operating system simulation project developed in Python.
+ASOS is an operating system simulation project developed in Python inspired by the portal games.
+Currently only supports windows
 
 ## Commands
 
