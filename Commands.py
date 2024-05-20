@@ -101,6 +101,8 @@ def CommandDir(arg, arg2=""):
     elif arg == "access" and arg2 != "":
         if "./" in arg2:
             arg2 = arg2.replace("./", UserDirectory)
+        if "." in arg2:
+            arg2 = arg2.replace(".", UserDirectory)
         if "A:/users/" in arg2:
             registry.read('.\OSRegistry.ini')
             login = registry.get('AOS', 'currentuser')
@@ -123,7 +125,7 @@ def CommandDir(arg, arg2=""):
         os.system(f"cd {ConvertedDir}")
         Utils.OSPrint(f"Now located in {arg2}")
     else:
-        return
+        Utils.OSPrint("Error: Invalid argument(s)!")
 
 def CommandExec(program):
     UserDirectory = GetUserDirectory()

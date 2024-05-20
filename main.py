@@ -12,6 +12,7 @@ AdriveExists = True
 OSVersion = ""
 
 def LoadOS():
+    Utils.OSClearLatestLog()
     os.system("cls")
     registry.read('.\OSRegistry.ini')
     registry.set('AOS', 'Quit', "False")
@@ -64,7 +65,7 @@ def GetAccreditationLevel(login):
     return data["accreditation"]
 
 def CheckIfADriveExists(login):
-    #This function checks if A drive exists, and if a user folder exists, if a user folder doesn't exist then it will create one
+    #This function checks if A drive exists, and if other system critical folders exist, if any system critical folders are missing then it will create them
     if os.path.exists("./A"):
         if os.path.exists(f"./A/users/{login}/personal_files") != True:
             if os.path.exists(f"./A/users/") != True:
@@ -72,6 +73,8 @@ def CheckIfADriveExists(login):
             if os.path.exists(f"./A/users/{login}") != True:
                 os.mkdir(f"./A/users/{login}")
             os.mkdir(f"./A/users/{login}/personal_files")
+        if os.path.exists("./A/logs/") != True:
+            os.mkdir("./A/logs/")
         return True
     else:
         return False

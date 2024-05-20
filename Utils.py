@@ -1,4 +1,5 @@
 import json
+import struct
 import time
 import sys
 import os
@@ -6,7 +7,19 @@ import os
 SystemCriticalFolders = ["users"]
 
 def OSPrint(value):
-    print(f">> {value}")
+    Msg = f">> {value}"
+    print(Msg)
+    OSLatestLog(Msg)
+
+def OSLatestLog(value):
+    latest_log = open("./A/logs/latest.log", "a")
+    if "\n" in value:
+        latest_log.write(value)
+    else:
+        latest_log.write(value + "\n")
+
+def OSClearLatestLog():
+    open("./A/logs/latest.log", "w").close()
 
 def OSLoad(value, endmessage, speed):
     Completion = 0
@@ -21,8 +34,10 @@ def OSLoad(value, endmessage, speed):
         else:
             time.sleep(0.1)
         Completion += 1
-    sys.stdout.write(f"\r>> {endmessage} ({Completion}%)                           ")
+    EndMessage = f"\r>> {endmessage} ({Completion}%)"
+    sys.stdout.write(f"{EndMessage}                           ")
     sys.stdout.write("\n")
+    OSLatestLog(EndMessage)
 
 def OS_Shutdown(value):
     Completion = 0
@@ -38,9 +53,10 @@ def OS_Shutdown(value):
     os.system("cls")
 
 def OSInput(CaseSensitive):
-    value = input(f"// ")
+    value = input("// ")
     if CaseSensitive != True:
         value = value.lower()
+    OSLatestLog(f"// {value}")
     return value
 
 def GetAccountAccredidation(login):
