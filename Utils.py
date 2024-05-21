@@ -4,7 +4,7 @@ import time
 import sys
 import os
 
-SystemCriticalFolders = ["users"]
+SystemCriticalFolders = ["users", "logs"]
 
 def OSPrint(value):
     Msg = f">> {value}"
