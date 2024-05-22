@@ -106,7 +106,7 @@ def OSMain(LoginFail):
     login = Utils.OSInput(True)
     LoginCheck = CheckIfLoginExists(login)
     if LoginCheck != True:
-        Utils.OSPrint("Login does not exist! Please try again!")
+        Utils.OSPrintWarning("Login does not exist! Please try again")
         OSMain(True)
     Utils.OSPrint("Login successfully identified. Please enter your password below.")
     SetCurrentUser(login)
@@ -114,14 +114,14 @@ def OSMain(LoginFail):
     password = Utils.OSInput(True)
     PasswordCheck = CheckIfPasswordExists(login, password)
     if PasswordCheck != True:
-        Utils.OSPrint("Password is incorrect! Please try again!")
+        Utils.OSPrintWarning("Password is incorrect! Please try again")
         OSMain(True)
     Utils.OSPrint(f"Password matching. Logging to account \"{login}\"")
     time.sleep(1)
     AccreditationLevel = GetAccreditationLevel(login)
     AdriveExists = CheckIfADriveExists(login)
     if AdriveExists != True:
-        Utils.OSPrint("A drive does not exist")
+        Utils.OSPrintError("FATAL ERROR: A drive does not exist")
         exit(1)
     Utils.OSPrint(f"Logged in. Account: \"{login}\". Level {AccreditationLevel} Accreditation.")
     time.sleep(0.5)
@@ -142,22 +142,22 @@ def OSMain(LoginFail):
                     commands[command_lower](*tokens[1:])  # Pass all arguments
                 except Exception as e:
                     if "takes 1 positional argument" in str(e):
-                        Utils.OSPrint(f"Error command \"{command_lower}\" has too many arguments!")
+                        Utils.OSPrintError(f"ERROR: Command \"{command_lower}\" has too many arguments!")
                     elif "takes from 1 to 2 positional arguments" in str(e):
-                        Utils.OSPrint(f"Error command \"{command_lower}\" has too many arguments!")
+                        Utils.OSPrintError(f"ERROR: Command \"{command_lower}\" has too many arguments!")
                     else:
-                        Utils.OSPrint(f"Unknown Error: {e}")
+                        Utils.OSPrintError(f"UNKNOWN ERROR: {e}")
             else:
                 try:
                     commands[command_lower]()
                 except Exception as e:
                     if "missing 1 required positional argument" in str(e):
-                        Utils.OSPrint(f"Error command \"{command_lower}\" has too few arguments!")
+                        Utils.OSPrintError(f"ERROR: Command \"{command_lower}\" has too few arguments!")
                     else:
-                        Utils.OSPrint(f"Unknown Error: {e}")
+                        Utils.OSPrintError(f"UNKNOWN ERROR: {e}")
 
         else:
-            Utils.OSPrint("Invalid command. Enter \"help\" to see available commands.")
+            Utils.OSPrintWarning("Invalid command. Enter \"help\" to see available commands.")
 try:
     LoadOS()
 finally:

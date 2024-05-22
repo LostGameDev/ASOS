@@ -2,6 +2,12 @@ import json
 import time
 import sys
 import os
+import shutil
+from colorama import init as colorama_init
+from colorama import Fore
+from colorama import Style
+
+colorama_init()
 
 SystemCriticalFolders = ["users", "logs"]
 
@@ -9,6 +15,18 @@ def OSPrint(value):
     Msg = f">> {value}"
     print(Msg)
     OSLatestLog(Msg)
+
+def OSPrintError(value):
+    Error = f"{Fore.RED}/!\ {value} /!\{Style.RESET_ALL}"
+    LogError = f"/!\ {value} /!\ "
+    print(Error)
+    OSLatestLog(LogError)
+
+def OSPrintWarning(value):
+    Warn = f"{Fore.YELLOW}! {value} !{Style.RESET_ALL}"
+    LogWarn = f"! {value} !"
+    print(Warn)
+    OSLatestLog(LogWarn)
 
 def OSLatestLog(value):
     latest_log = open("./A/logs/latest.log", "a")
@@ -18,6 +36,26 @@ def OSLatestLog(value):
         latest_log.write(value + "\n")
 
 def OSClearLatestLog():
+    if os.path.exists("./A/logs/") != True:
+        os.mkdir("./A/logs/")
+    if os.path.isfile("./A/logs/latest.log") != True:
+        open("./A/logs/latest.log", "w").close()
+        return
+    FileCount = 0
+    for item in os.listdir("./A/logs/"):
+        if os.path.isfile(os.path.join("./A/logs/", item)):
+            if ".meta" not in item or ".gitignore" not in item: 
+                FileCount += 1
+    if FileCount >= 6:
+        shutil.rmtree("./A/logs/")
+        os.mkdir("./A/logs/")
+        open("./A/logs/latest.log", "w").close()
+        return
+        
+    CurrentTime = time.ctime()
+    CurrentTime = CurrentTime.replace(" ", "-")
+    CurrentTime = CurrentTime.replace(":", "-")
+    shutil.copy("./A/logs/latest.log", f"./A/logs/{CurrentTime}.log")
     open("./A/logs/latest.log", "w").close()
 
 def OSLoad(value, endmessage, speed):

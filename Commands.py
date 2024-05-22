@@ -26,7 +26,7 @@ def CommandHelp(command=""):
         if command in commandDefinitions:
             Utils.OSPrint(commandDefinitions[command])
         else:
-            Utils.OSPrint(f"Command \"{command}\" does not exist or does not have a definition!")
+            Utils.OSPrintWarning(f"Command \"{command}\" does not exist or does not have a definition!")
 
 def CheckIfDirectoryExists(directory):
     char = {"/":'\\', ":":"", '"':''}
@@ -70,7 +70,11 @@ def CommandDir(arg, arg2=""):
         FolderCount = 0
         for item in os.listdir(ConvertedDir):
             if os.path.isfile(os.path.join(ConvertedDir, item)):
-                if ".meta" not in item or ".gitignore" not in item: 
+                if ".meta" in item: 
+                    FileCount += 0
+                elif ".gitignore" in item:
+                    FileCount += 0
+                else:
                     FileCount += 1
             if os.path.isdir(os.path.join(ConvertedDir, item)):
                 FolderCount += 1
@@ -87,7 +91,11 @@ def CommandDir(arg, arg2=""):
         FolderCount = 0
         for item in os.listdir(ConvertedDir):
             if os.path.isfile(os.path.join(ConvertedDir, item)):
-                if ".meta" not in item or ".gitignore" not in item: 
+                if ".meta" in item: 
+                    FileCount += 0
+                elif ".gitignore" in item:
+                    FileCount += 0
+                else:
                     FileCount += 1
                     Utils.OSPrint(f"File: {item}")
             if os.path.isdir(os.path.join(ConvertedDir, item)):
@@ -108,11 +116,11 @@ def CommandDir(arg, arg2=""):
             login = registry.get('AOS', 'currentuser')
             accredidation = Utils.GetAccountAccredidation(login)
             if login not in arg2 and accredidation != 3:
-                Utils.OSPrint(f"Error: Cannot access you do not have permission to access this directory")
+                Utils.OSPrintError(f"ERROR: Cannot access you do not have permission to access this directory")
                 return
         Exists = CheckIfDirectoryExists(arg2)
         if Exists == False:
-            Utils.OSPrint(f"Error: Directory does not exist!")
+            Utils.OSPrintError(f"ERROR: Directory does not exist!")
             return
         registry.read('.\OSRegistry.ini')
         registry.set('AOS', 'UserDirectory', arg2)
@@ -125,7 +133,7 @@ def CommandDir(arg, arg2=""):
         os.system(f"cd {ConvertedDir}")
         Utils.OSPrint(f"Now located in {arg2}")
     else:
-        Utils.OSPrint("Error: Invalid argument(s)!")
+        Utils.OSPrintError("ERROR: Invalid argument(s)!")
 
 def CommandExec(program):
     UserDirectory = GetUserDirectory()
@@ -143,33 +151,34 @@ def CommandExec(program):
                     Utils.OSLoad(f"Booting \"{program}\"", f"\"{program}\" running.", "Normal")
                     subprocess.run([python_executable, item], env=env, shell=True, cwd = ConvertedDir)
                 except FileNotFoundError:
-                    Utils.OSPrint("File not found.")
+                    Utils.OSPrintWarning("File not found.")
             else:
-                Utils.OSPrint("Only python programs can be executed.")
+                Utils.OSPrintWarning("Only python programs can be executed.")
             break
     else:
         Utils.OSPrint("Program not found.")
 
 def CommandOpen(File):
+    if ".meta" in File:
+        File = File.replace(".meta", "")
     UserDirectory = GetUserDirectory()
-
     python_executable = sys.executable  # Path to the Python executable running this script
     python_path = os.environ.get("PYTHONPATH", "")  # Get the current PYTHONPATH
     env = os.environ.copy()  # Create a copy of the current environment variables
     env["PYTHONPATH"] = python_path  # Set the PYTHONPATH for the subprocess
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
-    FileMetadata = open(ConvertedDir + File + ".meta", "rb")
     try:
+        FileMetadata = open(ConvertedDir + File + ".meta", "rb")
         min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+        FileMetadata.close()
     except:
         min_accredidation = 1
-    FileMetadata.close()
     registry.read('.\OSRegistry.ini')
     login = registry.get('AOS', 'currentuser')
     accredidation = Utils.GetAccountAccredidation(login)
     if min_accredidation > accredidation:
-        Utils.OSPrint(f"Error: Cannot open \"{File}\" you do not have permission to access this file")
+        Utils.OSPrintWarning(f"Cannot open \"{File}\" you do not have permission to access this file")
         return
     Utils.OSLoad(f"Booting \"TextEditor.py\"", f"Aperture Science Text Editor running. Accessing file \"{File}\"", "Normal")
     subprocess.run([python_executable, "TextEditor.py", "..\\" + ConvertedDir + File], env=env, shell=True, cwd = "./ROM/")
@@ -179,8 +188,9 @@ def CommandCat(File, Output=""):
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     if ".meta" in File:
-        Utils.OSPrint(f"File \"{file_name}\" not found.")
-        return
+        File= File.replace(".meta", "")
+    if ".meta" in Output:
+        Output = Output.replace(".meta", "")
     files = File.split()
     if len(files) == 1:
         f = open(ConvertedDir + files[0], 'r')
@@ -200,7 +210,7 @@ def CommandCat(File, Output=""):
                     if file_name != files[-1]:
                         output_data.append('\n')
             except FileNotFoundError:
-                Utils.OSPrint(f"File \"{file_name}\" not found.")
+                Utils.OSPrintWarning(f"File \"{file_name}\" not found.")
         if Output:
             with open(ConvertedDir + Output, 'w') as f:
                 f.writelines(output_data)
@@ -211,12 +221,14 @@ def CommandCat(File, Output=""):
                 Utils.OSPrint(line)
                 time.sleep(0.1)
     else:
-        Utils.OSPrint("No files specified.")
+        Utils.OSPrintWarning("No files specified.")
 
 def CommandClear():
     os.system("cls")
 
 def CommandCreate(Name, Type):
+    if ".meta" in Name:
+        Name = Name.replace(".meta", "")
     UserDirectory = GetUserDirectory()
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
@@ -224,7 +236,7 @@ def CommandCreate(Name, Type):
         if os.path.isfile(ConvertedDir + Name) != True:
             try:
                 if UserDirectory == "A:/users/":
-                    Utils.OSPrint(f"Error: Cannot create \"{Name}\" you do not have permission to create files in this directory.")
+                    Utils.OSPrintWarning(f"Cannot create \"{Name}\" you do not have permission to create files in this directory.")
                     return
                 registry.read('.\OSRegistry.ini')
                 CurrentUser = registry.get('AOS', 'CurrentUser')
@@ -244,15 +256,15 @@ def CommandCreate(Name, Type):
                     file.write(binary_data)
                     file.close()
             except:
-                Utils.OSPrint(f"Failed to create file \"{Name}\"")
+                Utils.OSPrintError(f"ERROR: Failed to create file \"{Name}\"")
                 return
         else:
-            Utils.OSPrint(f"Failed to create file \"{Name}\" file already exists")
+            Utils.OSPrintWarning(f"Failed to create file \"{Name}\" file already exists")
     elif Type == "-Folder":
         if os.path.exists(ConvertedDir + Name) != True:
             try:
                 if UserDirectory == "A:/users/":
-                    Utils.OSPrint(f"Error: Cannot create \"{Name}\" you do not have permission to create folders in this directory.")
+                    Utils.OSPrintWarning(f"Cannot create \"{Name}\" you do not have permission to create folders in this directory.")
                     return
                 registry.read('.\OSRegistry.ini')
                 CurrentUser = registry.get('AOS', 'CurrentUser')
@@ -272,70 +284,74 @@ def CommandCreate(Name, Type):
                     file.write(binary_data)
                     file.close()
             except:
-                Utils.OSPrint(f"Failed to create folder \"{Name}\"")
+                Utils.OSPrintError(f"ERROR: Failed to create folder \"{Name}\"")
                 return
         else:
-            Utils.OSPrint(f"Failed to create folder \"{Name}\" folder already exists")
+            Utils.OSPrintWarning(f"Failed to create folder \"{Name}\" folder already exists")
     else:
-        Utils.OSPrint(f"Invalid Type \"{Type}\"...")
+        Utils.OSPrintWarning(f"Invalid Type \"{Type}\"...")
         return
 
 def CommandDelete(Name, Type):
+    if ".meta" in Name:
+        Name = Name.replace(".meta", "")
     UserDirectory = GetUserDirectory()
-
     char = {"/":'\\', ":":"", '"':''}
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     if Type == "-File":
         try:
             if UserDirectory == "A:/users/":
-                Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this file")
+                Utils.OSPrintWarning(f"Cannot delete \"{Name}\" you do not have permission to delete this file")
                 return
-            FileMetadata = open(ConvertedDir + Name + ".meta", "rb")
             try:
+                FileMetadata = open(ConvertedDir + Name + ".meta", "rb")
                 min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+                FileMetadata.close()
             except:
                 min_accredidation = 1
-            FileMetadata.close()
             registry.read('.\OSRegistry.ini')
             login = registry.get('AOS', 'currentuser')
             accredidation = Utils.GetAccountAccredidation(login)
             if min_accredidation > accredidation:
-                Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this file")
+                Utils.OSPrintWarning(f"Cannot delete \"{Name}\" you do not have permission to delete this file")
                 return
             Utils.OSLoad(f"Deleting file \"{Name}\"...", f"File \"{Name}\" deleted.", "Normal")
             os.remove(ConvertedDir + Name)
             os.remove(ConvertedDir + Name + ".meta")
         except FileNotFoundError:
-            Utils.OSPrint(f"File \"{Name}\" does not exist!")
+            Utils.OSPrintError(f"ERROR: File \"{Name}\" does not exist!")
         return
     elif Type == "-Folder":
         try:
             if Name in Utils.SystemCriticalFolders:
-                Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this directory")
+                Utils.OSPrintWarning(f"Cannot delete \"{Name}\" you do not have permission to delete this directory")
                 return
             if UserDirectory == "A:/users/":
-                Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this directory")
+                Utils.OSPrintWarning(f"Cannot delete \"{Name}\" you do not have permission to delete this directory")
                 return
-            FileMetadata = open(ConvertedDir + Name + ".meta", "rb")
             try:
+                FileMetadata = open(ConvertedDir + Name + ".meta", "rb")
                 min_accredidation = struct.unpack('i', FileMetadata.read())[0]
+                FileMetadata.close()
             except:
                 min_accredidation = 1
-            FileMetadata.close()
             registry.read('.\OSRegistry.ini')
             login = registry.get('AOS', 'currentuser')
             accredidation = Utils.GetAccountAccredidation(login)
             if min_accredidation > accredidation:
-                Utils.OSPrint(f"Error: Cannot delete \"{Name}\" you do not have permission to delete this directory")
+                Utils.OSPrintWarning(f"Cannot delete \"{Name}\" you do not have permission to delete this directory")
                 return
             Utils.OSLoad(f"Deleting Folder \"{Name}\"...", f"Folder \"{Name}\" deleted.", "Normal")
             shutil.rmtree(ConvertedDir + Name)
-            os.remove(ConvertedDir + Name + ".meta")
+            try:
+                os.remove(ConvertedDir + Name + ".meta")
+            except:
+                Utils.OSLatestLog("Failed to remove .meta file")
         except:
-            Utils.OSPrint(f"Folder \"{Name}\" does not exist!")
+            Utils.OSPrintError(f"ERROR: Folder \"{Name}\" does not exist!")
         return
     else:
-        Utils.OSPrint(f"Invalid Type \"{Type}\"...")
+        Utils.OSPrintWarning(f"Invalid Type \"{Type}\"...")
         return
 
 def CommandTime():
@@ -413,7 +429,7 @@ def CommandAccountEditor():
         Utils.OSLoad(f"Booting \"AccountEditor.py\"", f"Aperture Science Account Editor running.", "Normal")
         subprocess.run([python_executable, "AccountEditor.py"], env=env, shell=True, cwd = "./ROM/")
     else:
-        Utils.OSPrint("You do not have permission to use the \"Aperture Science Account Editor\"")
+        Utils.OSPrintWarning("You do not have permission to use the \"Aperture Science Account Editor\"")
 
 def CommandDeleteAccount(account):
     registry.read('.\OSRegistry.ini')
@@ -423,16 +439,16 @@ def CommandDeleteAccount(account):
         registry.read('.\OSRegistry.ini')
         CurrentUser = registry.get('AOS', 'CurrentUser')
         if account == CurrentUser:
-            Utils.OSPrint(f"Error: Cannot delete account \"{account}\" you cannot delete your own account")
+            Utils.OSPrintWarning(f"Cannot delete account \"{account}\" you cannot delete your own account")
             return
         Utils.OSLoad(f"Deleting account: {account}", f"Account {account} deleted", "Normal")
         try:
             os.remove(f"./accounts/{account}.json")
         except:
-            Utils.OSPrint(f"Error: Failed to delete account \"{account}\" does this account exist?")
+            Utils.OSPrintError(f"ERROR: Failed to delete account \"{account}\" does this account exist?")
             return
     else:
-        Utils.OSPrint(f"Error: Cannot delete account \"{account}\" you do not have permission to run this command")
+        Utils.OSPrintWarning(f"Cannot delete account \"{account}\" you do not have permission to run this command")
 
 commands = {
     "help": CommandHelp,
