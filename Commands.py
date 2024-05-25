@@ -486,6 +486,7 @@ def CommandDeleteAccount(account):
         Utils.OSLoad(f"Deleting account: {account}", f"Account {account} deleted", "Normal")
         try:
             os.remove(f"./accounts/{account}.json")
+            shutil.rmtree(f"./A/users/{account}/")
         except:
             Utils.OSPrintError(f"ERROR: Failed to delete account \"{account}\" does this account exist?")
             return

@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import aosAPI
 
 def main_func(create, account=""):
@@ -36,6 +37,7 @@ def main_func(create, account=""):
     elif create == False and account != "":
         f = open(f"../accounts/{account}.json")
         data = json.loads(f.read())
+        f.close()
         firstname = data["name"].split(" ")[0]
         lastname = data["name"].split(" ")[1]
         password = data["password"]
@@ -66,6 +68,15 @@ def main_func(create, account=""):
             newdata["name"] = newfirstname + " " + lastname
             with open(f"../accounts/{account}.json", "w") as account_json:
                 json.dump(newdata, account_json, indent=4)
+                account_json.close()
+            shutil.copy(f"../accounts/{account}.json", f"../accounts/{newfirstname.lower()}_{lastname[0].lower()}.json")
+            newaccountname = newfirstname.lower() + "_" + lastname[0].lower()
+            os.remove(f"../accounts/{account}.json")
+            try:
+                os.rename(f"../A/users/{account}/", f"../A/users/{newaccountname}/")
+            except:
+                pass
+            account = newaccountname
             main_func(False, account)
         elif choice == "2":
             aosAPI.AOSPrint("Enter new last name")
@@ -75,6 +86,15 @@ def main_func(create, account=""):
             newdata["name"] = firstname + " " + newlastname
             with open(f"../accounts/{account}.json", "w") as account_json:
                 json.dump(newdata, account_json, indent=4)
+                account_json.close()
+            shutil.copy(f"../accounts/{account}.json", f"../accounts/{firstname.lower()}_{newlastname[0].lower()}.json")
+            newaccountname = firstname.lower() + "_" + newlastname[0].lower()
+            os.remove(f"../accounts/{account}.json")
+            try:
+                os.rename(f"../A/users/{account}/", f"../A/users/{newaccountname}/")
+            except:
+                pass
+            account = newaccountname
             main_func(False, account)
         elif choice == "3":
             aosAPI.AOSPrint("Enter new password")
@@ -82,6 +102,7 @@ def main_func(create, account=""):
             newdata["password"] = newpassword
             with open(f"../accounts/{account}.json", "w") as account_json:
                 json.dump(newdata, account_json, indent=4)
+                account_json.close()
             main_func(False, account)
         elif choice == "4":
             aosAPI.AOSPrint("Enter new accreditation level")
@@ -93,6 +114,7 @@ def main_func(create, account=""):
             newdata["accreditation"] = newaccreditationlevel
             with open(f"../accounts/{account}.json", "w") as account_json:
                 json.dump(newdata, account_json, indent=4)
+                account_json.close()
             main_func(False, account)
         elif choice == "5":
             aosAPI.AOSPrint("Enter new email address")
@@ -100,10 +122,12 @@ def main_func(create, account=""):
             newdata["email"] = newemail
             with open(f"../accounts/{account}.json", "w") as account_json:
                 json.dump(newdata, account_json, indent=4)
+                account_json.close()
             main_func(False, account)
         elif choice == "6":
             with open(f"../accounts/{account}.json", "w") as account_json:
                 json.dump(newdata, account_json, indent=4)
+                account_json.close()
                 aosAPI.AOSLoad("Exiting the \"Aperture Science Account Editor\"", "Exited the \"Aperture Science Account Editor\"", "Fast")
         else:
             aosAPI.AOSPrint("Error invalid choice!")
