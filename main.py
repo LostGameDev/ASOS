@@ -77,7 +77,7 @@ def CheckIfADriveExists(login):
         if os.path.exists("./A/logs/") != True:
             os.mkdir("./A/logs/")
             with open("./A/logs" + ".meta", "wb") as file:
-                binary_data = struct.pack('i', 3)
+                binary_data = struct.pack('i', 2)
                 file.write(binary_data)
                 file.close()
         return True

@@ -1,3 +1,4 @@
+import gzip
 import json
 import os
 import subprocess
@@ -203,6 +204,9 @@ def CommandOpen(File):
     if is_binary(ConvertedDir + File):
         Utils.OSPrintError(f"ERROR: Cannot open file \"{File}\" because \"{File}\" is a binary file!")
         return
+    if ".log" in File:
+        Utils.OSPrintWarning(f"Log files cannot be opened with the open command! Use the view_log command!")
+        return
     Utils.OSLoad(f"Booting \"TextEditor.py\"", f"Aperture Science Text Editor running. Accessing file \"{File}\"", "Normal")
     subprocess.run([python_executable, "TextEditor.py", "..\\" + ConvertedDir + File], env=env, shell=True, cwd = "./ROM/")
 
@@ -214,6 +218,9 @@ def CommandCat(File, Output=""):
         File= File.replace(".meta", "")
     if ".meta" in Output:
         Output = Output.replace(".meta", "")
+    if ".log" in File:
+        Utils.OSPrintWarning(f"Log files cannot be viewed with the cat command! Use the view_log command!")
+        return
     files = File.split()
     if len(files) == 1:
         if is_binary(ConvertedDir + files[0]):
@@ -485,6 +492,45 @@ def CommandDeleteAccount(account):
     else:
         Utils.OSPrintWarning(f"Cannot delete account \"{account}\" you do not have permission to run this command")
 
+def CommandViewLog(File):
+    registry.read('.\OSRegistry.ini')
+    CurrentUser = registry.get('AOS', 'CurrentUser')
+    accreditationlvl = Utils.GetAccountAccredidation(CurrentUser)
+    if accreditationlvl >= 2:
+        LogsDirectory = "./A/logs/"
+        if ".meta" in File:
+            File= File.replace(".meta", "")
+        if is_binary(LogsDirectory + File):
+            try:
+                with gzip.open(f'{LogsDirectory + File}','rt') as fin:
+                    data = fin.readlines()     
+                    Utils.OSPrint(f"{File}:")
+                    for line in data:        
+                        line = line.rstrip('\n')
+                        print(line)
+                        Utils.OSLatestLog(line)
+                        time.sleep(0.1)
+                    Utils.OSPrint(f"End of log file")
+            except FileNotFoundError:
+                Utils.OSPrintWarning(f"Log \"{File}\" not found.")
+            return
+        try:
+            f = open(LogsDirectory + File, 'r')
+            data = f.readlines()
+            Utils.OSPrint(f"{File}:")
+            for line in data:
+                line = line.rstrip('\n')
+                print(line)
+                Utils.OSLatestLog(line)
+                time.sleep(0.1)
+            f.close()
+            Utils.OSPrint(f"End of log file")
+        except FileNotFoundError:
+            Utils.OSPrintWarning(f"Log \"{File}\" not found.")
+            return
+    else:
+        Utils.OSPrintWarning(f"Could not open log file \"{File}\" you do not have permission to use this command")
+
 commands = {
     "help": CommandHelp,
     "dir": CommandDir,
@@ -499,6 +545,7 @@ commands = {
     "sysinfo": CommandSysInfo,
     "account_edit": CommandAccountEditor,
     "delete_account": CommandDeleteAccount,
+    "view_log": CommandViewLog,
     "quit": CommandQuit
 }
 
@@ -516,5 +563,6 @@ commandDefinitions = {
     "time": "Prints the current time",
     "sysinfo": "Prints system information",
     "account_edit": "Runs the built-in account editor allowing for users to edit or create accounts only useable for accounts with an accreditation level of 3",
-    "delete_account": "Deletes a specified account, you cannot delete the currently logged-in account, only useable for accounts with an accreditation level of 3. It has the following arguments:\n\t<account>: The name of the account to delete"
+    "delete_account": "Deletes a specified account, you cannot delete the currently logged-in account, only useable for accounts with an accreditation level of 3. It has the following arguments:\n\t<account>: The name of the account to delete",
+    "view_log": "Lists specified log file only useable for accounts with an accreditation level of 2, it has the following arguments:\n\t<file> The log file to view"
 }

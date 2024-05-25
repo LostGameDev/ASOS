@@ -20,6 +20,7 @@ ASOS supports the following commands:
 - `sysinfo`: Display system information.
 - `account_edit`: Edit user account settings.
 - `delete_account`: Delete a user account.
+- `view_log`: Displays the given log file.
 - `quit`: Exit the operating system.
 
 ## Installation
@@ -35,6 +36,12 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
+
+### Default account login info:
+login: default_a
+password: 123
+
+I would recommend using default_a to create your own account and having at least one other account with an accredidation level of 3 so that you can safely delete default_a
 
 # License
 
