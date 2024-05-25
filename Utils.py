@@ -3,6 +3,7 @@ import time
 import sys
 import os
 import shutil
+import gzip
 from colorama import init as colorama_init
 from colorama import Fore
 from colorama import Style
@@ -56,6 +57,10 @@ def OSClearLatestLog():
     CurrentTime = CurrentTime.replace(" ", "-")
     CurrentTime = CurrentTime.replace(":", "-")
     shutil.copy("./A/logs/latest.log", f"./A/logs/{CurrentTime}.log")
+    with open(f"./A/logs/{CurrentTime}.log", 'rb') as f_in:
+        with gzip.open(f"./A/logs/{CurrentTime}.log.gz", 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    os.remove(f"./A/logs/{CurrentTime}.log")
     open("./A/logs/latest.log", "w").close()
 
 def OSLoad(value, endmessage, speed):
