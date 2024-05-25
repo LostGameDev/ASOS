@@ -39,16 +39,27 @@ def GetUserDirectory():
     registry.read('.\OSRegistry.ini')
     login = registry.get('AOS', 'CurrentUser')
     if registry.get('AOS', 'UserDirectory') == "":
-        UserDirectory = f"A:/users/{login}/personal_files/"
-        registry.read('.\OSRegistry.ini')
-        registry.set('AOS', 'UserDirectory', UserDirectory)
-        with open('.\OSRegistry.ini', "w") as registryfile:
-            registry.write(registryfile)
-            registryfile.close()
-        char = {"/":'\\', ":":"", '"':''}
-        ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
-        os.system(f"cd {ConvertedDir}")
-        return 
+        try:
+            UserDirectory = f"A:/users/{login}/personal_files/"
+            registry.read('.\OSRegistry.ini')
+            registry.set('AOS', 'UserDirectory', UserDirectory)
+            with open('.\OSRegistry.ini', "w") as registryfile:
+                registry.write(registryfile)
+                registryfile.close()
+            char = {"/":'\\', ":":"", '"':''}
+            ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
+            os.system(f"cd {ConvertedDir}")
+        except:
+            UserDirectory = f"A:/users/{login}/"
+            registry.read('.\OSRegistry.ini')
+            registry.set('AOS', 'UserDirectory', UserDirectory)
+            with open('.\OSRegistry.ini', "w") as registryfile:
+                registry.write(registryfile)
+                registryfile.close()
+            char = {"/":'\\', ":":"", '"':''}
+            ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
+            os.system(f"cd {ConvertedDir}")
+        return
     else:
         registry.read('.\OSRegistry.ini')
         UserDirectory = registry.get('AOS', 'UserDirectory')
@@ -56,6 +67,15 @@ def GetUserDirectory():
         ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
         os.system(f"cd {ConvertedDir}")
         return UserDirectory
+
+def is_binary(file_name):
+    try:
+        with open(file_name, 'tr') as check_file:  # try open file in text mode
+            check_file.read()
+            check_file.close()
+            return False
+    except:  # if fails then file is non-text (binary)
+        return True
 
 def CommandDir(arg, arg2=""):
     UserDirectory = GetUserDirectory()
@@ -180,6 +200,9 @@ def CommandOpen(File):
     if min_accredidation > accredidation:
         Utils.OSPrintWarning(f"Cannot open \"{File}\" you do not have permission to access this file")
         return
+    if is_binary(ConvertedDir + File):
+        Utils.OSPrintError(f"ERROR: Cannot open file \"{File}\" because \"{File}\" is a binary file!")
+        return
     Utils.OSLoad(f"Booting \"TextEditor.py\"", f"Aperture Science Text Editor running. Accessing file \"{File}\"", "Normal")
     subprocess.run([python_executable, "TextEditor.py", "..\\" + ConvertedDir + File], env=env, shell=True, cwd = "./ROM/")
 
@@ -193,6 +216,9 @@ def CommandCat(File, Output=""):
         Output = Output.replace(".meta", "")
     files = File.split()
     if len(files) == 1:
+        if is_binary(ConvertedDir + files[0]):
+            Utils.OSPrintError(f"ERROR: Cannot open file \"{files[0]}\" because \"{files[0]}\" is a binary file!")
+            return
         f = open(ConvertedDir + files[0], 'r')
         data = f.readlines()
         for line in data:
@@ -203,6 +229,9 @@ def CommandCat(File, Output=""):
     elif len(files) > 1:
         output_data = []
         for file_name in files:
+            if is_binary(ConvertedDir + file_name):
+                Utils.OSPrintError(f"ERROR: Cannot open file \"{file_name}\" because \"{file_name}\" is a binary file!")
+                continue
             try:
                 with open(ConvertedDir + file_name, 'r') as f:
                     data = f.readlines()
@@ -262,6 +291,9 @@ def CommandCreate(Name, Type):
             Utils.OSPrintWarning(f"Failed to create file \"{Name}\" file already exists")
     elif Type == "-Folder":
         if os.path.exists(ConvertedDir + Name) != True:
+            if Name in Utils.SystemCriticalFolders:
+                Utils.OSPrintWarning(f"Failed to create folder \"{Name}\" you cannot create a folder with the same name as a system critical folder!")
+                return
             try:
                 if UserDirectory == "A:/users/":
                     Utils.OSPrintWarning(f"Cannot create \"{Name}\" you do not have permission to create folders in this directory.")
@@ -269,7 +301,7 @@ def CommandCreate(Name, Type):
                 registry.read('.\OSRegistry.ini')
                 CurrentUser = registry.get('AOS', 'CurrentUser')
                 accreditationlvl = Utils.GetAccountAccredidation(CurrentUser)
-                Utils.OSPrint(f"Enter the lowest level of accreditation level that is required to access this file")
+                Utils.OSPrint(f"Enter the lowest level of accreditation level that is required to access this folder")
                 Accreditationlevel = int(Utils.OSInput(False))
                 while Accreditationlevel > accreditationlvl:
                     Accreditationlevel -= 1;
@@ -289,7 +321,7 @@ def CommandCreate(Name, Type):
         else:
             Utils.OSPrintWarning(f"Failed to create folder \"{Name}\" folder already exists")
     else:
-        Utils.OSPrintWarning(f"Invalid Type \"{Type}\"...")
+        Utils.OSPrintWarning(f"Invalid Type \"{Type}\"")
         return
 
 def CommandDelete(Name, Type):
@@ -300,8 +332,8 @@ def CommandDelete(Name, Type):
     ConvertedDir = "" + ''.join(char.get(s, s) for s in UserDirectory)
     if Type == "-File":
         try:
-            if UserDirectory == "A:/users/":
-                Utils.OSPrintWarning(f"Cannot delete \"{Name}\" you do not have permission to delete this file")
+            if UserDirectory == "A:/users/" or UserDirectory == "A:/logs/":
+                Utils.OSPrintWarning(f"Cannot delete \"{Name}\" you do not have permission to delete files in this directory")
                 return
             try:
                 FileMetadata = open(ConvertedDir + Name + ".meta", "rb")
@@ -317,7 +349,10 @@ def CommandDelete(Name, Type):
                 return
             Utils.OSLoad(f"Deleting file \"{Name}\"...", f"File \"{Name}\" deleted.", "Normal")
             os.remove(ConvertedDir + Name)
-            os.remove(ConvertedDir + Name + ".meta")
+            try:
+                os.remove(ConvertedDir + Name + ".meta")
+            except:
+                Utils.OSLatestLog(f"Failed to delete file \"{Name}\"'s meta file!")
         except FileNotFoundError:
             Utils.OSPrintError(f"ERROR: File \"{Name}\" does not exist!")
         return
@@ -346,7 +381,7 @@ def CommandDelete(Name, Type):
             try:
                 os.remove(ConvertedDir + Name + ".meta")
             except:
-                Utils.OSLatestLog("Failed to remove .meta file")
+                Utils.OSLatestLog(f"Failed to delete folder \"{Name}\"'s meta file!")
         except:
             Utils.OSPrintError(f"ERROR: Folder \"{Name}\" does not exist!")
         return

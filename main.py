@@ -1,4 +1,5 @@
 import os
+import struct
 import time
 import Utils
 import json
@@ -75,6 +76,10 @@ def CheckIfADriveExists(login):
             os.mkdir(f"./A/users/{login}/personal_files")
         if os.path.exists("./A/logs/") != True:
             os.mkdir("./A/logs/")
+            with open("./A/logs" + ".meta", "wb") as file:
+                binary_data = struct.pack('i', 3)
+                file.write(binary_data)
+                file.close()
         return True
     else:
         return False
