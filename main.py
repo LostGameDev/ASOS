@@ -1,5 +1,6 @@
 import os
 import struct
+import sys
 import time
 import Utils
 import json
@@ -133,7 +134,7 @@ def OSMain(LoginFail):
     AdriveExists = CheckIfADriveExists(login)
     if AdriveExists != True:
         Utils.OSPrintError("FATAL ERROR: A drive does not exist")
-        exit(1)
+        sys.exit(1)
     Utils.OSPrint(f"Logged in. Account: \"{login}\". Level {AccreditationLevel} Accreditation.")
     time.sleep(0.5)
     Utils.OSPrint(f"Hello, user \"{login}\". What do you want to do? Enter \"help\" to show commands. Enter \"dir getname\" to show current directory, and its files. Enter \"exec\" to run a program. Enter \"open\" to open a file.")
@@ -144,7 +145,7 @@ def OSMain(LoginFail):
         elif registry.get('AOS', 'loggedout') == "True":
             OSMain(False)
         elif registry.get('AOS', 'Quit') == "True":
-            exit(0)
+            sys.exit(0)
         command = Utils.OSInput(True)
         tokens = tokenize_command(command)
         try:
