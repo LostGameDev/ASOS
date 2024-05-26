@@ -55,7 +55,7 @@ def SetUserDirectory(login):
     registry.read(get_absolute_path('OSRegistry.ini'))
     login = registry.get('AOS', 'CurrentUser')
     if registry.get('AOS', 'UserDirectory') == "":
-        UserDirectory = get_absolute_path(f"A/users/{login}/personal_files/")
+        UserDirectory = f"A/users/{login}/personal_files/"
         registry.read(get_absolute_path('OSRegistry.ini'))
         registry.set('AOS', 'UserDirectory', UserDirectory)
         with open(get_absolute_path('OSRegistry.ini'), "w") as registryfile:
