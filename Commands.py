@@ -450,6 +450,9 @@ def CommandQuit():
     registry.set('AOS', 'Quit', "True")
     with open('.\OSRegistry.ini', "w") as registryfile:
         registry.write(registryfile)
+    registry.set('AOS', 'Reboot', "False")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
     registry.read('.\OSRegistry.ini')
     registry.set('AOS', 'CurrentUser', "")
     with open('.\OSRegistry.ini', "w") as registryfile:
@@ -532,6 +535,21 @@ def CommandViewLog(File):
     else:
         Utils.OSPrintWarning(f"Could not open log file \"{File}\" you do not have permission to use this command")
 
+def CommandReboot():
+    Utils.OS_Shutdown("Rebooting")
+    registry.read('.\OSRegistry.ini')
+    registry.set('AOS', 'Reboot', "True")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
+    registry.read('.\OSRegistry.ini')
+    registry.set('AOS', 'CurrentUser', "")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
+    registry.read('.\OSRegistry.ini')
+    registry.set('AOS', 'UserDirectory', "")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
+
 commands = {
     "help": CommandHelp,
     "dir": CommandDir,
@@ -547,6 +565,7 @@ commands = {
     "account_edit": CommandAccountEditor,
     "delete_account": CommandDeleteAccount,
     "view_log": CommandViewLog,
+    "reboot": CommandReboot,
     "quit": CommandQuit
 }
 
@@ -561,6 +580,7 @@ commandDefinitions = {
     "create": "Creates a new file or folder in the current directory. It has the following arguments:\n\t<name>: The name of the file or folder to create.\n\t-Type <type>: Specifies whether to create a file (-File) or a folder (-Folder).",
     "delete": "Deletes a specified file or folder. It has the following arguments:\n\t<name>: The name of the file or folder to delete.\n\t-Type <type>: Specifies whether to delete a file (-File) or a folder (-Folder).",
     "quit": "Shuts down the operating system.",
+    "reboot": "Reboots the operating system.",
     "time": "Prints the current time",
     "sysinfo": "Prints system information",
     "account_edit": "Runs the built-in account editor allowing for users to edit or create accounts only useable for accounts with an accreditation level of 3",

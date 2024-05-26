@@ -19,6 +19,9 @@ def LoadOS():
     registry.set('AOS', 'Quit', "False")
     with open('.\OSRegistry.ini', "w") as registryfile:
         registry.write(registryfile)
+    registry.set('AOS', 'Reboot', "False")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
     OSVersion = registry.get('AOS', 'version')
     Utils.OSPrint(f"{OSVersion} starting.")
     Utils.OSLoad("Booting sequence initializing...", "Booting sequence initialized.", "Slow")
@@ -133,7 +136,9 @@ def OSMain(LoginFail):
     Utils.OSPrint(f"Hello, user \"{login}\". What do you want to do? Enter \"help\" to show commands. Enter \"dir getname\" to show current directory, and its files. Enter \"exec\" to run a program. Enter \"open\" to open a file.")
     while True:
         registry.read(".\OSRegistry.ini")
-        if registry.get('AOS', 'Quit') == "True":
+        if registry.get('AOS', 'Reboot') == "True":
+            LoadOS()
+        elif registry.get('AOS', 'Quit') == "True":
             exit(0)
         command = Utils.OSInput(True)
         tokens = tokenize_command(command)
