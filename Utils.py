@@ -12,8 +12,6 @@ colorama_init()
 SystemCriticalFolders = ["users", "logs"]
 
 def get_base_path():
-    if hasattr(sys, '_MEIPASS'):
-        return sys._MEIPASS
     return os.path.abspath(".")
 
 def get_log_path():
