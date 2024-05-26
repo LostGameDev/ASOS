@@ -34,6 +34,15 @@ def CheckIfDirectoryExists(directory):
     ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in directory)
     if os.path.exists(ConvertedDir):
         return True
+    if os.path.isfile(ConvertedDir):
+        return True
+    return False
+
+def CheckIfFileExists(file):
+    char = {"/":'\\', ":":"", '"':''}
+    ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in file)
+    if os.path.isfile(ConvertedDir):
+        return True
     return False
 
 def GetUserDirectory():
@@ -132,6 +141,8 @@ def CommandDir(arg, arg2=""):
             arg2 = arg2.replace("./", UserDirectory)
         if "." in arg2:
             arg2 = arg2.replace(".", UserDirectory)
+        if arg2.endswith("/") != True:
+            arg2 = arg2 + "/"
         if "A:/users/" in arg2:
             registry.read('.\OSRegistry.ini')
             login = registry.get('AOS', 'currentuser')
@@ -568,6 +579,163 @@ def CommandLogout():
     with open('.\OSRegistry.ini', "w") as registryfile:
         registry.write(registryfile)
 
+def CommandCopy(Name, Directory, Type):
+    UserDirectory = GetUserDirectory()
+
+    if ".meta" in Name:
+        Name = Name.replace(".meta", "")
+
+    if "./" in Directory:
+        Directory = Directory.replace("./", UserDirectory)
+
+    if "A:/users/" in Directory:
+        registry.read('.\OSRegistry.ini')
+        login = registry.get('AOS', 'currentuser')
+        accredidation = Utils.GetAccountAccredidation(login)
+        if login not in Directory and accredidation != 3:
+            Utils.OSPrintError(f"ERROR: Cannot access you do not have permission to access this directory")
+            return
+            
+    DirExists = CheckIfDirectoryExists(Directory)
+    FileExists = CheckIfFileExists(Directory)
+    if DirExists == False and Type == "-Folder":
+        Utils.OSPrintError(f"ERROR: Directory does not exist!")
+        return
+    if FileExists == True and Type == "-File":
+        Utils.OSPrintError(f"ERROR: File already exists!")
+        return
+    char = {"/":'\\', ":":"", '"':'', '.':''}
+    ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in Directory)
+    ConvertedUserDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
+
+    if Type == "-File":
+        try:
+            shutil.copy2(ConvertedUserDir + Name, ConvertedDir)
+            shutil.copy2(ConvertedUserDir + Name + ".meta", ConvertedDir)
+            Utils.OSPrint(f"File \"{Name}\" was copied successfully to \"{Directory}\"")
+        except shutil.SameFileError:
+            Utils.OSPrintError(f"ERROR: Can not copy file \"{Name}\" to \"{Directory}\" because they are the same file")
+            return
+        except:
+            Utils.OSPrintError(f"ERROR: Failed to copy file \"{Name}\"")
+            return
+    elif Type == "-Folder":
+        try:
+            os.mkdir(f"{ConvertedDir}/{Name}")
+            shutil.copytree(ConvertedUserDir + Name, ConvertedDir+Name, dirs_exist_ok=True)
+            shutil.copy2(ConvertedUserDir + Name + ".meta", ConvertedDir)
+            Utils.OSPrint(f"Folder \"{Name}\" was copied successfully to \"{Directory}\"")
+        except shutil.SameFileError:
+            Utils.OSPrintError(f"ERROR: Can not copy folder \"{Name}\" to \"{Directory}\" because they are the same folder")
+            return
+        except:
+            Utils.OSPrintError(f"ERROR: Failed to copy folder \"{Name}\"")
+            return
+    else:
+        Utils.OSPrintWarning(f"Invalid type \"{Type}\"")
+
+def CommandMove(Name, Directory, Type):
+    UserDirectory = GetUserDirectory()
+
+    if ".meta" in Name:
+        Name = Name.replace(".meta", "")
+
+    if "./" in Directory:
+        Directory = Directory.replace("./", UserDirectory)
+
+    if "A:/users/" in Directory:
+        registry.read('.\OSRegistry.ini')
+        login = registry.get('AOS', 'currentuser')
+        accredidation = Utils.GetAccountAccredidation(login)
+        if login not in Directory and accredidation != 3:
+            Utils.OSPrintError(f"ERROR: Cannot access you do not have permission to access this directory")
+            return
+        
+    DirExists = CheckIfDirectoryExists(Directory)
+    FileExists = CheckIfFileExists(Directory)
+    if DirExists == False and Type == "-Folder":
+        Utils.OSPrintError(f"ERROR: Directory does not exist!")
+        return
+    if FileExists == True and Type == "-File":
+        Utils.OSPrintError(f"ERROR: File already exists!")
+        return
+    char = {"/":'\\', ":":"", '"':'', '.':''}
+    ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in Directory)
+    ConvertedUserDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
+
+    if Type == "-File":
+        try:
+            shutil.copy2(ConvertedUserDir + Name, ConvertedDir)
+            shutil.copy2(ConvertedUserDir + Name + ".meta", ConvertedDir)
+            os.remove(ConvertedUserDir + Name)
+            os.remove(ConvertedUserDir + Name + ".meta")
+            Utils.OSPrint(f"File \"{Name}\" was moved successfully to \"{Directory}\"")
+        except shutil.SameFileError:
+            Utils.OSPrintError(f"ERROR: Can not move file \"{Name}\" to \"{Directory}\" because they are the same file")
+            return
+        except:
+            Utils.OSPrintError(f"ERROR: Failed to move file \"{Name}\"")
+            return
+    elif Type == "-Folder":
+        try:
+            os.mkdir(f"{ConvertedDir}/{Name}")
+            shutil.copytree(ConvertedUserDir + Name, ConvertedDir+Name, dirs_exist_ok=True)
+            shutil.copy2(ConvertedUserDir + Name + ".meta", ConvertedDir)
+            shutil.rmtree(ConvertedUserDir + Name)
+            os.remove(ConvertedUserDir + Name + ".meta")
+            Utils.OSPrint(f"Folder \"{Name}\" was moved successfully to \"{Directory}\"")
+        except shutil.SameFileError:
+            Utils.OSPrintError(f"ERROR: Can not move folder \"{Name}\" to \"{Directory}\" because they are the same folder")
+            return
+        except:
+            Utils.OSPrintError(f"ERROR: Failed to move folder \"{Name}\"")
+            return
+    else:
+        Utils.OSPrintWarning(f"Invalid type \"{Type}\"")
+
+def CommandRename(Name, NewName, Type):
+    UserDirectory = GetUserDirectory()
+
+    if ".meta" in Name:
+        Name = Name.replace(".meta", "")
+
+    char = {"/":'\\', ":":"", '"':'', '.':''}
+    ConvertedDir = ".\\" + ''.join(char.get(s, s) for s in UserDirectory)
+
+    if Type == "-File":
+        try:
+            shutil.copy2(ConvertedDir + Name, ConvertedDir + NewName)
+            shutil.copy2(ConvertedDir + Name + ".meta", ConvertedDir + NewName + ".meta")
+            os.remove(ConvertedDir + Name)
+            os.remove(ConvertedDir + Name + ".meta")
+            Utils.OSPrint(f"File \"{Name}\" renamed to \"{NewName}\"")
+            return
+        except shutil.SameFileError:
+            #if the name is the same then just do nothing
+            Utils.OSPrint(f"File \"{Name}\" renamed to \"{NewName}\"")
+            return
+        except:
+            Utils.OSPrintError(f"Failed to rename \"{Name}\" to \"{NewName}\"")
+            return
+    if Type == "-Folder":
+        try:
+            os.mkdir(ConvertedDir + NewName)
+            shutil.copytree(ConvertedDir + Name, ConvertedDir + NewName, dirs_exist_ok=True)
+            shutil.rmtree(ConvertedDir + Name)
+            shutil.copy2(ConvertedDir + Name + ".meta", ConvertedDir + NewName + ".meta")
+            os.remove(ConvertedDir + Name + ".meta")
+            Utils.OSPrint(f"File \"{Name}\" renamed to \"{NewName}\"")
+            return
+        except shutil.SameFileError:
+            #if the name is the same then just do nothing
+            Utils.OSPrint(f"File \"{Name}\" renamed to \"{NewName}\"")
+            return
+        except:
+            Utils.OSPrintError(f"Failed to rename \"{Name}\" to \"{NewName}\"")
+            return
+    else:
+        Utils.OSPrintWarning(f"Invalid type \"{Type}\"")
+
 commands = {
     "help": CommandHelp,
     "dir": CommandDir,
@@ -577,6 +745,9 @@ commands = {
     "clear": CommandClear,
     "create": CommandCreate,
     "delete": CommandDelete,
+    "copy": CommandCopy,
+    "move": CommandMove,
+    "rename": CommandRename,
     "cls": CommandClear,
     "time": CommandTime,
     "sysinfo": CommandSysInfo,
@@ -596,7 +767,7 @@ commandDefinitions = {
     "cat": "Lists the contents of a specified file however if given two or more files it will concatenate them displaying them directly after each other. It has the following arguments:\n\t<file>: The name of the file(s) to list.\n\t<output>: The name of the file to output too.",
     "clear": "Clears the screen.",
     "cls": "Clears the screen.",
-    "create": "Creates a new file or folder in the current directory. It has the following arguments:\n\t<name>: The name of the file or folder to create.\n\t-Type <type>: Specifies whether to create a file (-File) or a folder (-Folder).",
+    "create": "Creates a new file or folder in the current directory. It has the following arguments:\n\t<name>: The name of the file or folder to create.\n\t<Type>: Specifies whether to create a file (-File) or a folder (-Folder).",
     "delete": "Deletes a specified file or folder. It has the following arguments:\n\t<name>: The name of the file or folder to delete.\n\t-Type <type>: Specifies whether to delete a file (-File) or a folder (-Folder).",
     "quit": "Shuts down the operating system.",
     "reboot": "Reboots the operating system.",
@@ -605,5 +776,8 @@ commandDefinitions = {
     "account_edit": "Runs the built-in account editor allowing for users to edit or create accounts only useable for accounts with an accreditation level of 3",
     "logout": "Logs out the current user",
     "delete_account": "Deletes a specified account, you cannot delete the currently logged-in account, only useable for accounts with an accreditation level of 3. It has the following arguments:\n\t<account>: The name of the account to delete",
-    "view_log": "Lists specified log file only useable for accounts with an accreditation level of 2, it has the following arguments:\n\t<file> The log file to view"
+    "view_log": "Lists specified log file only useable for accounts with an accreditation level of 2, it has the following arguments:\n\t<file> The log file to view",
+    "copy": "Copies the specified file or directory to the specified location. It has the following arguments:\n\t<Name> The name of the file or directory to copy.\n\t<Type>: Specifies whether to copy a file (-File) or a folder (-Folder).\n\t<Destination> The path to the destination directory/file to copy to.",
+    "move": "Moves the specified file or directory to the specified location. It has the following arguments:\n\t<Name> The name of the file or directory to copy.\n\t<Type>: Specifies whether to move a file (-File) or a folder (-Folder).\n\t<Destination> The path to the destination directory/file to move to.",
+    "rename": "Rename the specified file or directory. It has the following arguments:\n\t<Name> The name of the file/directory to be renamed.\n\t<NewName> The new name that the file/directory will be renamed to.\n\t<Type>: Specifies whether to rename a file (-File) or a folder (-Folder)."
 }

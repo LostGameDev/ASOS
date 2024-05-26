@@ -14,6 +14,9 @@ ASOS supports the following commands:
 - `cat`: Display the contents of a file.
 - `clear`: Clear the screen.
 - `create`: Create a new file.
+- `copy`: Copy a file or directory
+- `move`: Move a file or directory
+- `rename`: Rename a file or directory
 - `delete`: Delete a file.
 - `cls`: Alias for `clear`.
 - `time`: Display the current system time.
