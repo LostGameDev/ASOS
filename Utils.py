@@ -5,12 +5,24 @@ import os
 import shutil
 import gzip
 from colorama import init as colorama_init
-from colorama import Fore
-from colorama import Style
+from colorama import Fore, Style
 
 colorama_init()
 
 SystemCriticalFolders = ["users", "logs"]
+
+def get_base_path():
+    if hasattr(sys, '_MEIPASS'):
+        return sys._MEIPASS
+    return os.path.abspath(".")
+
+def get_log_path():
+    return os.path.join(get_base_path(), "A", "logs")
+
+def ensure_log_directory():
+    log_path = get_log_path()
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)
 
 def OSPrint(value):
     Msg = f">> {value}"
@@ -30,38 +42,42 @@ def OSPrintWarning(value):
     OSLatestLog(LogWarn)
 
 def OSLatestLog(value):
-    latest_log = open("./A/logs/latest.log", "a")
+    ensure_log_directory()
+    latest_log = open(os.path.join(get_log_path(), "latest.log"), "a")
     if "\n" in value:
         latest_log.write(value)
     else:
         latest_log.write(value + "\n")
 
 def OSClearLatestLog():
-    if os.path.exists("./A/logs/") != True:
-        os.mkdir("./A/logs/")
-    if os.path.isfile("./A/logs/latest.log") != True:
-        open("./A/logs/latest.log", "w").close()
+    log_path = get_log_path()
+    ensure_log_directory()
+    if not os.path.isfile(os.path.join(log_path, "latest.log")):
+        open(os.path.join(log_path, "latest.log"), "w").close()
         return
     FileCount = 0
-    for item in os.listdir("./A/logs/"):
-        if os.path.isfile(os.path.join("./A/logs/", item)):
-            if ".meta" not in item or ".gitignore" not in item: 
+    for item in os.listdir(log_path):
+        if os.path.isfile(os.path.join(log_path, item)):
+            if ".meta" not in item and ".gitignore" not in item: 
                 FileCount += 1
     if FileCount >= 6:
-        shutil.rmtree("./A/logs/")
-        os.mkdir("./A/logs/")
-        open("./A/logs/latest.log", "w").close()
+        shutil.rmtree(log_path)
+        os.makedirs(log_path)
+        open(os.path.join(log_path, "latest.log"), "w").close()
         return
         
     CurrentTime = time.ctime()
     CurrentTime = CurrentTime.replace(" ", "-")
     CurrentTime = CurrentTime.replace(":", "-")
-    shutil.copy("./A/logs/latest.log", f"./A/logs/{CurrentTime}.log")
-    with open(f"./A/logs/{CurrentTime}.log", 'rb') as f_in:
-        with gzip.open(f"./A/logs/{CurrentTime}.log.gz", 'wb') as f_out:
+    latest_log_path = os.path.join(log_path, "latest.log")
+    backup_log_path = os.path.join(log_path, f"{CurrentTime}.log")
+    gzip_log_path = f"{backup_log_path}.gz"
+    shutil.copy(latest_log_path, backup_log_path)
+    with open(backup_log_path, 'rb') as f_in:
+        with gzip.open(gzip_log_path, 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out)
-    os.remove(f"./A/logs/{CurrentTime}.log")
-    open("./A/logs/latest.log", "w").close()
+    os.remove(backup_log_path)
+    open(latest_log_path, "w").close()
 
 def OSLoad(value, endmessage, speed):
     Completion = 0
@@ -96,13 +112,13 @@ def OS_Shutdown(value):
 
 def OSInput(CaseSensitive):
     value = input("// ")
-    if CaseSensitive != True:
+    if not CaseSensitive:
         value = value.lower()
     OSLatestLog(f"// {value}")
     return value
 
 def GetAccountAccredidation(login):
-    f = open(f"./accounts/{login}.json")
-    data = json.loads(f.read())
+    with open(os.path.join(get_base_path(), "accounts", f"{login}.json")) as f:
+        data = json.loads(f.read())
     accreditationlvl = data["accreditation"]
     return int(accreditationlvl)
