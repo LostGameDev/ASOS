@@ -453,6 +453,9 @@ def CommandQuit():
     registry.set('AOS', 'Reboot', "False")
     with open('.\OSRegistry.ini', "w") as registryfile:
         registry.write(registryfile)
+    registry.set('AOS', 'loggedout', "False")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
     registry.read('.\OSRegistry.ini')
     registry.set('AOS', 'CurrentUser', "")
     with open('.\OSRegistry.ini', "w") as registryfile:
@@ -550,6 +553,21 @@ def CommandReboot():
     with open('.\OSRegistry.ini', "w") as registryfile:
         registry.write(registryfile)
 
+def CommandLogout():
+    Utils.OS_Shutdown("Logging out")
+    registry.read('.\OSRegistry.ini')
+    registry.set('AOS', 'LoggedOut', "True")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
+    registry.read('.\OSRegistry.ini')
+    registry.set('AOS', 'CurrentUser', "")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
+    registry.read('.\OSRegistry.ini')
+    registry.set('AOS', 'UserDirectory', "")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
+
 commands = {
     "help": CommandHelp,
     "dir": CommandDir,
@@ -565,6 +583,7 @@ commands = {
     "account_edit": CommandAccountEditor,
     "delete_account": CommandDeleteAccount,
     "view_log": CommandViewLog,
+    "logout": CommandLogout,
     "reboot": CommandReboot,
     "quit": CommandQuit
 }
@@ -584,6 +603,7 @@ commandDefinitions = {
     "time": "Prints the current time",
     "sysinfo": "Prints system information",
     "account_edit": "Runs the built-in account editor allowing for users to edit or create accounts only useable for accounts with an accreditation level of 3",
+    "logout": "Logs out the current user",
     "delete_account": "Deletes a specified account, you cannot delete the currently logged-in account, only useable for accounts with an accreditation level of 3. It has the following arguments:\n\t<account>: The name of the account to delete",
     "view_log": "Lists specified log file only useable for accounts with an accreditation level of 2, it has the following arguments:\n\t<file> The log file to view"
 }

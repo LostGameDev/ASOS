@@ -107,6 +107,9 @@ def tokenize_command(command):
     return tokens
 
 def OSMain(LoginFail):
+    registry.set('AOS', 'LoggedOut', "False")
+    with open('.\OSRegistry.ini', "w") as registryfile:
+        registry.write(registryfile)
     if LoginFail == True:
         Utils.OSPrint("Please enter your credentials. Enter login below.")
     else:
@@ -138,6 +141,8 @@ def OSMain(LoginFail):
         registry.read(".\OSRegistry.ini")
         if registry.get('AOS', 'Reboot') == "True":
             LoadOS()
+        elif registry.get('AOS', 'loggedout') == "True":
+            OSMain(False)
         elif registry.get('AOS', 'Quit') == "True":
             exit(0)
         command = Utils.OSInput(True)

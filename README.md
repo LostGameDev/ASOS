@@ -21,6 +21,7 @@ ASOS supports the following commands:
 - `account_edit`: Edit user account settings.
 - `delete_account`: Delete a user account.
 - `view_log`: Displays the given log file.
+- `logout`: Logs out the current user.
 - `reboot`: Reboots the operating system.
 - `quit`: Exit the operating system.
 
