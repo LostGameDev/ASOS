@@ -190,8 +190,14 @@ def CommandExec(program):
                     subprocess.run([python_executable, item], env=env, shell=True, cwd = ConvertedDir)
                 except FileNotFoundError:
                     Utils.OSPrintWarning("File not found.")
+            elif item.endswith(".exe"):
+                try:
+                    Utils.OSLoad(f"Booting \"{program}\"", f"\"{program}\" running.", "Normal")
+                    os.system(f"{ConvertedDir + item}")
+                except FileNotFoundError:
+                    Utils.OSPrintWarning("File not found.")
             else:
-                Utils.OSPrintWarning("Only python programs can be executed.")
+                Utils.OSPrintWarning("Only python programs and windows exe's can be executed.")
             break
     else:
         Utils.OSPrint("Program not found.")
@@ -467,20 +473,23 @@ def CommandQuit():
     registry.set('AOS', 'Quit', "True")
     with open(get_absolute_path('.\OSRegistry.ini'), "w") as registryfile:
         registry.write(registryfile)
+        registryfile.close()
     registry.set('AOS', 'Reboot', "False")
     with open(get_absolute_path('.\OSRegistry.ini'), "w") as registryfile:
         registry.write(registryfile)
+        registryfile.close()
     registry.set('AOS', 'loggedout', "False")
     with open(get_absolute_path('.\OSRegistry.ini'), "w") as registryfile:
         registry.write(registryfile)
-    registry.read(get_absolute_path("OSRegistry.ini"))
+        registryfile.close()
     registry.set('AOS', 'CurrentUser', "")
     with open(get_absolute_path('.\OSRegistry.ini'), "w") as registryfile:
         registry.write(registryfile)
-    registry.read(get_absolute_path("OSRegistry.ini"))
+        registryfile.close()
     registry.set('AOS', 'UserDirectory', "")
     with open(get_absolute_path('.\OSRegistry.ini'), "w") as registryfile:
         registry.write(registryfile)
+        registryfile.close()
 
 def CommandAccountEditor():
     registry.read(get_absolute_path("OSRegistry.ini"))
@@ -561,29 +570,39 @@ def CommandReboot():
     registry.set('AOS', 'Reboot', "True")
     with open(get_absolute_path('.\OSRegistry.ini'), "w") as registryfile:
         registry.write(registryfile)
-    registry.read(get_absolute_path("OSRegistry.ini"))
+        registryfile.close()
     registry.set('AOS', 'CurrentUser', "")
     with open(get_absolute_path('.\OSRegistry.ini')) as registryfile:
         registry.write(registryfile)
-    registry.read(get_absolute_path("OSRegistry.ini"))
+        registryfile.close()
     registry.set('AOS', 'UserDirectory', "")
     with open(get_absolute_path('.\OSRegistry.ini')) as registryfile:
         registry.write(registryfile)
+        registryfile.close()
 
 def CommandLogout():
     Utils.OS_Shutdown("Logging out")
     registry.read(get_absolute_path("OSRegistry.ini"))
-    registry.set('AOS', 'LoggedOut', "True")
-    with open(get_absolute_path('.\OSRegistry.ini')) as registryfile:
+    registry.set('AOS', 'Quit', "False")
+    with open(get_absolute_path('.\OSRegistry.ini'), "w") as registryfile:
         registry.write(registryfile)
-    registry.read(get_absolute_path("OSRegistry.ini"))
+        registryfile.close()
+    registry.set('AOS', 'Reboot', "False")
+    with open(get_absolute_path('.\OSRegistry.ini'), "w") as registryfile:
+        registry.write(registryfile)
+        registryfile.close()
+    registry.set('AOS', 'loggedout', "True")
+    with open(get_absolute_path('.\OSRegistry.ini'), "w") as registryfile:
+        registry.write(registryfile)
+        registryfile.close()
     registry.set('AOS', 'CurrentUser', "")
-    with open(get_absolute_path('.\OSRegistry.ini')) as registryfile:
+    with open(get_absolute_path('.\OSRegistry.ini'), "w") as registryfile:
         registry.write(registryfile)
-    registry.read(get_absolute_path("OSRegistry.ini"))
+        registryfile.close()
     registry.set('AOS', 'UserDirectory', "")
-    with open(get_absolute_path('.\OSRegistry.ini')) as registryfile:
+    with open(get_absolute_path('.\OSRegistry.ini'), "w") as registryfile:
         registry.write(registryfile)
+        registryfile.close()
 
 def CommandCopy(Name, Directory, Type):
     UserDirectory = GetUserDirectory()

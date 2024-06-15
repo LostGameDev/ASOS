@@ -26,9 +26,11 @@ def LoadOS():
     registry.set('AOS', 'Quit', "False")
     with open(get_absolute_path('OSRegistry.ini'), "w") as registryfile:
         registry.write(registryfile)
+        registryfile.close()
     registry.set('AOS', 'Reboot', "False")
     with open(get_absolute_path('OSRegistry.ini'), "w") as registryfile:
         registry.write(registryfile)
+        registryfile.close()
     OSVersion = registry.get('AOS', 'version')
     Utils.OSPrint(f"{OSVersion} starting.")
     Utils.OSLoad("Booting sequence initializing...", "Booting sequence initialized.", "Slow")
