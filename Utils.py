@@ -1,4 +1,5 @@
 import json
+import struct
 import time
 import sys
 import os
@@ -21,6 +22,10 @@ def ensure_log_directory():
     log_path = get_log_path()
     if not os.path.exists(log_path):
         os.makedirs(log_path)
+        with open(log_path + ".meta", "wb") as file:
+                binary_data = struct.pack('i', 2)
+                file.write(binary_data)
+                file.close()
 
 def OSPrint(value):
     Msg = f">> {value}"
